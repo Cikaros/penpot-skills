@@ -44,6 +44,28 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 
 第一部分保证"操作正确"，第二部分保证"结果正确"。缺任何一半，产出都不可交付。
 
+## 实测覆盖（Penpot 2.18.7）
+
+2026-11-19 在真实 Penpot 实例 + 仅暴露 `execute_code` 的 MCP 部署上逐项验证：
+
+| 能力 | 结论 |
+|---|---|
+| 连接与文件读取 | 正常；`currentUser` 可能因缺 `user:read` 抛异常，不是未登录 |
+| 页面/画板/矩形/文本 | 正常；`createBoard()` 总落在页面根 |
+| flex 布局与顺序 | `naturalChildOrdering=true`，数组顺序=视觉顺序；改完需 `waitForLayoutUpdate` |
+| 文本 | 默认宽度 **1px**；必须先 `resize(width,h)` 再设 `auto-height` |
+| 图片上传/填充 | `uploadMediaData` 正常；`fillImage.data()` 返回 Promise |
+| 颜色/排版 token | 颜色用三字段绑定；排版只能逐字段复制 |
+| 阴影/模糊/圆角 | `shadows` 复数、`blur={value}`；四角圆角可用 |
+| SVG 图标 | 返回 group；重着色改子 path 的 `strokes`/`fills` |
+| 组件 | 可创建/实例化；实例文本覆盖不影响主组件 |
+| 导出 | PNG/SVG 均为 Promise；支持 `scale` |
+| 代码生成 | `generateStyle` 仅 `css`；`generateMarkup` 支持 `html`/`svg` |
+| grid 布局 | `columns`/`rows` 只读，`push` 无效；用 flex/绝对定位代替 |
+| 查找/遍历 | `findShapes` 不带 root 会跨页；`analyzeDescendants` 回调签名 `(root,node)` |
+
+逐条证据与反例见 `docs/penpot-mcp/pitfalls.md`；可复现骨架见 `skills/penpot-mcp/references/recipes.md`。
+
 ## 约定
 
 - 结论必须来自源码或实测；不确定就标注"待验证"，不要写成事实。
