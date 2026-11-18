@@ -114,6 +114,19 @@ cardBoard.insertChild(cardBoard.children.length, card);
 
 `[实测]` `penpot.group([a, b])` 后，group 的 `children` 是 `[b, a]`，与传入顺序相反。视觉层级是否保持需用 `y`/重叠色块或导出图核对；不要用 group 后的数组下标反推 z 序。
 
+### 2.7 对齐与分布
+
+```js
+penpot.alignHorizontal(shapes, "left");   // left | center | right
+penpot.alignVertical(shapes, "top");
+penpot.distributeHorizontal(shapes);
+```
+
+- `[实测]` `alignHorizontal([a,b,c], "left")` 把三个矩形统一到最左 x。
+- `[实测]` `distributeHorizontal` 按等间距分布：0–40、100–160、250–280 的三个块，中间块被移到 115，两侧间隙都是 75。
+- **分布前先确保 x 互不相同**：三个元素 x 全相同时，分布结果会退化（实测出现 x=5/10/10）。
+- 对齐/分布只改坐标，不改尺寸；flex/grid 子元素上调用无效。
+
 ## 3. 文本
 
 ```js
@@ -250,6 +263,19 @@ shape.fills = [{
 
 - `fill` 的可写字段包括 `fillColor`、`fillOpacity`、`fillColorRefId`、`fillColorRefFile`、`fillImage` `[实测]`。
 - `tokenOverview()` 在无 token 时返回 `{}`，不要把它当作“库为空”的唯一依据，直接查 `penpot.library.local.colors` 更可靠 `[实测]`。
+
+### 6.3 组件实例
+
+```js
+const cmp = penpot.library.local.components.find(c => c.name === "exp-component");
+const inst = cmp.instance();          // 返回 board
+const txt = inst.children.find(c => c.type === "text");
+txt.characters = "实例文本";           // 只改实例，主组件不变
+```
+
+- `[实测]` 实例文本覆盖后，`cmp.mainInstance()` 的对应文本仍为原值。
+- 实例与主组件同名；定位实例靠自定义 `name` 或 id，不要靠“与主组件不同名”。
+- 不要返回实例上的方法/函数值，会触发 `structuredClone` 错误（见第 7 节）。
 - grid 布局对象的 `columns`/`rows` 在本版本是只读 getter，直接赋值会报 `only a getter` `[实测]`；需要网格时先确认当前版本是否提供写入方法。
 
 ### 6.2 阴影、模糊、圆角、透明度

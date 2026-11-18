@@ -6,6 +6,16 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.4.3
+
+对齐、分布与组件实例。
+
+### Added
+
+- `alignHorizontal/alignVertical` 用法与只改坐标不改尺寸的行为。
+- `distributeHorizontal` 等间距规则；同 x 时结果退化。
+- 组件实例文本覆盖只影响实例，主组件不变。
+
 ## v0.4.2
 
 样式与图标实测。

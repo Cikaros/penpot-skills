@@ -52,6 +52,17 @@ await penpot.waitForLayoutUpdate();   // 不等就读，坐标可能全是 0（�
 - `penpotUtils.getBounds(shape)` 返回页面绝对坐标 `{x,y,width,height}`（实测）。
 - `penpotUtils.addFlexLayout(shape, "row" | "column")` 会按现有 x/y 排序后建立布局（源码可见）。
 
+### 2.1 对齐与分布
+
+```js
+penpot.alignHorizontal(shapes, "left");   // left | center | right
+penpot.distributeHorizontal(shapes);
+```
+
+- 对齐只改坐标，不改尺寸（实测）。
+- 分布按等间距：40/60/30 宽、x=0/100/250 的三个块，中间块被移到 115，两侧间隙均 75（实测）。
+- 所有元素 x 相同时分布结果退化，先错开再调用。
+
 ## 3. 文本
 
 ```js
