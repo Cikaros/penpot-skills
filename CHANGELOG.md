@@ -6,6 +6,23 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.2.0
+
+案例集与可复用配方。
+
+### Added
+
+- `docs/penpot-mcp/cases/`：四个分步案例
+  - `01-homepage-build.md` 分区块搭建首页（分片、幂等、坐标换算）
+  - `02-image-repair.md` 图片缺失修复（魔数检测、替换、验收）
+  - `03-overflow-fix.md` 子元素越界修复（裁剪判定、先算后改）
+  - `04-design-to-code.md` 设计转代码（选项名核对、token 映射）
+- `skills/penpot-mcp/references/recipes.md`：三段可直接复用的代码骨架
+
+### Changed
+
+- `pitfalls.md` 新增 P2-4：`generateStyle` 的 `withChildren` / `includeChildren` 选项名不一致
+
 ## v0.1.0
 
 首个基线版本。

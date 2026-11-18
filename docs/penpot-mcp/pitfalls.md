@@ -116,6 +116,10 @@ penpotUtils.setParentXY(shape, 0, 0); // 先把相对坐标归零
 
 `return` 的数据再用 `console.log` 打一遍，模型会收到两份，浪费上下文，也容易误读。
 
+### P2-4 `generateStyle` 的选项名两处不一致
+
+官方总览的示例写 `withChildren`，`PenpotUtils.generateCss` 内部用 `includeChildren`。传错不会报错，只会静默丢掉子元素。用 `penpot_api_info("Penpot", "generateStyle")` 核对当前版本再写。
+
 ## 改完必查
 
 - [ ] 所有子元素在父容器内（含 `clipContent` 的 board）

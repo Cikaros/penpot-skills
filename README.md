@@ -13,6 +13,7 @@ docs/
     conventions.md   文件/页面/画板/图层/组件/Token 的命名与分组规范
     pitfalls.md      API 陷阱目录（会静默产出坏数据的那些）
     auth.md          userToken、401、匿名会话、远程模式排查
+    cases/           实战案例：首页搭建、图片修复、越界修复、设计转代码
   design/            第二部分：设计思维、理念与设计规范
     principles.md    设计原则与 AI 协作原则
     visual-spec.md   栅格、间距、字阶、颜色、圆角、阴影、图标
@@ -21,7 +22,6 @@ docs/
 skills/
   penpot-mcp/        可直接安装的 Skill（操作型，短小、可执行）
 ```
-
 ## 快速开始
 
 **只想让 AI 少犯错**：安装技能。

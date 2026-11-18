@@ -103,3 +103,4 @@ return {
 - 详细 API 陷阱与代码片段：`references/api-pitfalls.md`
 - 认证、`userToken`、远程模式排查：`references/auth-and-transport.md`
 - 设计简报模板、设计转代码、图片流水线：`references/design-workflow.md`
+- 常用调用骨架（建区块 / 换图 / 越界巡检）：`references/recipes.md`
