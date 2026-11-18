@@ -1,42 +1,76 @@
 # penpot-skills
 
-与 Penpot 相关的 AI Skills 集合，用于约束 Agent 在 Penpot 设计文件上的操作方式，减少"看起来做完了、实际是坏数据"的情况。
+Penpot 相关的**使用规范、避坑手册、设计规范**与可执行 **Skills** 的集合。
 
-## 安装
+目标只有一个：让使用 Penpot（尤其是 Penpot MCP + AI）的人，不必把同样的坑再踩一遍。
 
-把 `skills/<name>/` 整个目录复制到客户端的 skills 目录，例如：
+## 内容结构
+
+```
+docs/
+  penpot-mcp/        第一部分：MCP 使用说明、规范与注意事项
+    usage.md         连接形态、工具契约、调用顺序
+    conventions.md   文件/页面/画板/图层/组件/Token 的命名与分组规范
+    pitfalls.md      API 陷阱目录（会静默产出坏数据的那些）
+    auth.md          userToken、401、匿名会话、远程模式排查
+  design/            第二部分：设计思维、理念与设计规范
+    principles.md    设计原则与 AI 协作原则
+    visual-spec.md   栅格、间距、字阶、颜色、圆角、阴影、图标
+    components.md    组件分层、变体、命名、验收
+    prompt-brief.md  设计简报模板与示例
+skills/
+  penpot-mcp/        可直接安装的 Skill（操作型，短小、可执行）
+```
+
+## 快速开始
+
+**只想让 AI 少犯错**：安装技能。
 
 ```powershell
 Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 ```
 
-重启或重新加载会话后，技能即可被自动发现。
+**想先理解规则**：按顺序读 `docs/penpot-mcp/usage.md` → `conventions.md` → `pitfalls.md`。
 
-## 技能列表
+**想做设计规范**：读 `docs/design/principles.md` → `visual-spec.md` → `components.md`。
 
-### `penpot-mcp`
+## 两部分的关系
 
-通过 Penpot MCP server 与插件操作设计文件。覆盖：
+| | 第一部分：MCP | 第二部分：设计 |
+|---|---|---|
+| 解决问题 | 会不会用错、连不上、数据写坏 | 做出来是否可用、一致、可交付 |
+| 形态 | 硬约束、检查表、故障速查 | 原则、尺度、组件规则 |
+| 失败表现 | 401、图片空白、元素被裁、超时 | 层级混乱、间距随意、组件膨胀 |
 
-- 工具契约：`execute_code` / `high_level_overview` / `penpot_api_info` / `export_shape` / `import_image`
-- 30 秒单次执行硬超时带来的分片要求
-- Penpot Plugin API 的静默陷阱：`appendChild`、flex 子元素顺序、只读宽高、`growType` 被 `resize` 重置
-- 认证边界：`userToken` 只属于 MCP 传输层，Penpot 只认 cookie 或 `Authorization`
-- 图片流水线：`penpot.uploadMediaData` + 魔数校验，防止把 HTML 错误页存成 PNG
-- 交付前验收清单与失败速查表
-
-参考文件：
-
-- `references/api-pitfalls.md`
-- `references/auth-and-transport.md`
-- `references/design-workflow.md`
+第一部分保证"操作正确"，第二部分保证"结果正确"。缺任何一半，产出都不可交付。
 
 ## 约定
 
-- 每个技能一个目录：`skills/<name>/SKILL.md`，可带 `references/`、`scripts/`、`assets/`
-- `SKILL.md` frontmatter 只写 `name` 和 `description` 两个字段
-- 技能目录内不放 README、CHANGELOG 之类的辅助文档，说明统一写在本文件
-- 结论必须来自源码或实测，不写"大概是这样"
+- 结论必须来自源码或实测；不确定就标注"待验证"，不要写成事实。
+- 规范分两类：**硬规则**（违反即错误，如 `appendChild`）与**项目约定**（可覆盖，如 4pt 间距体系）。文档中必须标明是哪一类。
+- 每个技能一个目录：`skills/<name>/SKILL.md`，可带 `references/`；frontmatter 只写 `name` 和 `description`。
+- 说明性文档放 `docs/`，技能目录内不放 README/CHANGELOG。
+
+## 版本管理
+
+采用语义化版本，标签格式 `vMAJOR.MINOR.PATCH`：
+
+| 变更类型 | 版本位 | 例子 |
+|---|---|---|
+| 规范不兼容变更（既有用法需改写） | MAJOR | `v1.0.0` → `v2.0.0` |
+| 新增技能、文档章节、规范条目 | MINOR | `v0.1.0` → `v0.2.0` |
+| 修正错误、补示例、措辞调整 | PATCH | `v0.1.0` → `v0.1.1` |
+
+发布流程：
+
+```bash
+git add -A
+git commit -m "feat: ..."
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin main --tags
+```
+
+每个版本在 `CHANGELOG.md` 记录变更；标签只打在已通过自检的提交上。
 
 ## 来源
 
