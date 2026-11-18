@@ -6,6 +6,23 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.4.1
+
+补齐布局默认值与可复现配方。
+
+### Added
+
+- `createBoard()` 默认 100×100、白底、`clipContent=true`，且总落在页面根；嵌套必须 `insertChild`。
+- `addFlexLayout()` 默认 `dir="row"`，间距与 padding 全为 0。
+- `penpot.group([a,b])` 后 `children` 顺序反转。
+- 返回函数值会触发 `message could not be cloned`。
+- `shape.export({scale})` 与 SVG 导出实测。
+- `createPage()` / `page.remove()` 不依赖当前激活页。
+
+### Refactored
+
+- `references/recipes.md` 重写为 7 段已验证骨架：临时验收页、幂等区块、文本块、图片替换、越界巡检、颜色 token、导出验收。
+
 ## v0.4.0
 
 文本链路与端到端页面的实测补充。

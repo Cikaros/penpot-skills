@@ -28,8 +28,11 @@ parent.insertChild(2, shape);                       // 第三位
 ```
 
 - `parent = null` 表示页面根。
-- 删除用 `shape.remove()`；`remove()` 不是"移动"。
+- `createBoard()` 默认 100×100、名称 `Board`、白底、`clipContent=true`，并且**总是加到页面根**，不会自动嵌到当前 board；要嵌套必须 `insertChild`（实测）。
+- `addFlexLayout()` 默认 `dir="row"`，间距/padding 全为 0（实测）。
+- 删除用 `shape.remove()`；`remove()` 不是“移动”。
 - reparent 后绝对坐标保留，要贴边再 `setParentXY`。
+- `penpot.group([a,b])` 后的 `children` 顺序会反转（实测），不要用下标反推 z 序。
 
 ## 2. 几何与布局
 
@@ -140,5 +143,8 @@ shape.fills = [{
 - 无模块作用域，不要写 `import`/`export`。
 - 跨调用状态放 `storage`。
 - 返回值走 JSON 序列化；返回 id/name/数值，不返回 shape 对象。
+- 不要返回函数（如某些 `isComponentInstance` 方法），否则 `structuredClone` 失败，报 `message could not be cloned`（实测）。
+- `shape.export({type:"png", scale:2})` 支持缩放；`type:"svg"` 返回 UTF-8 字节（实测）。
+- 临时验收页可 `createPage()` → 断言 → `page.remove()`，不会切换当前页（实测）。
 - 单次 30 秒硬超时；批量操作分片、可重入。
 - 只暴露 `execute_code` 的部署里，没有 `export_shape`/`import_image`；用 `shape.export()` 与 `uploadMediaData` 替代。

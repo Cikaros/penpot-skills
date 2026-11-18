@@ -88,6 +88,32 @@ flex/grid 容器的子元素位置由布局系统接管。要调间距用 `rowGa
 penpotUtils.setParentXY(shape, 24, 16);
 ```
 
+### 2.5 board 默认值与创建位置
+
+`[实测]` `penpot.createBoard()` 的默认值：
+
+| 项 | 默认值 |
+|---|---|
+| 尺寸 | 100 × 100 |
+| 名称 | `Board` |
+| 填充 | 白色 |
+| `clipContent` | **true** |
+| `borderRadius` / `shadow` | 0 / 无 |
+| flex / grid | 无 |
+
+关键行为：新建的 board **总是落在页面根（Root Frame）**，即使当前选中的是另一个 board。要嵌套必须显式 `parent.insertChild(...)`：
+
+```js
+const card = penpot.createBoard();   // parent = Root Frame
+cardBoard.insertChild(cardBoard.children.length, card);
+```
+
+`addFlexLayout()` 的默认 `dir` 是 `"row"`，`rowGap`/`columnGap`/padding 均为 0 `[实测]`。
+
+### 2.6 `group()` 会反转子元素数组
+
+`[实测]` `penpot.group([a, b])` 后，group 的 `children` 是 `[b, a]`，与传入顺序相反。视觉层级是否保持需用 `y`/重叠色块或导出图核对；不要用 group 后的数组下标反推 z 序。
+
 ## 3. 文本
 
 ```js
@@ -221,6 +247,9 @@ shape.fills = [{
 - `[实测]` 部分部署只暴露 `execute_code`，没有 `high_level_overview`/`export_shape`/`import_image`。工具清单以当前会话为准，缺工具时用 `shape.export()` + 返回字节长度自证，而不是假设工具坏了。
 - 单次调用 30 秒硬超时；超时即失败。
 - 返回值会被 JSON 序列化：只返回 `{id,name,x,y,width,height}` 之类的纯数据，不要返回 shape 代理对象。
+- 不要返回**函数值**（如某些 `isComponentInstance` 方法）：会直接报 `message could not be cloned` / `structuredClone` 失败。返回前用 `typeof v === "function" ? "function" : v` 过滤 `[实测]`。
+- `shape.export({type:"png", scale:2})` 支持缩放；`scale:2` 的字节数约为 1 倍时的 2.1 倍 `[实测]`。`type:"svg"` 返回以 `<svg` 开头的 UTF-8 字节 `[实测]`。
+- 页面可 `penpot.createPage()` 后直接 `page.remove()`，不会切换当前页 `[实测]`；适合做临时验收页。
 - 跨调用状态放 `storage`；普通变量不保留。
 
 ## 8. 验收清单
