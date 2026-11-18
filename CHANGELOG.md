@@ -6,6 +6,15 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.1
+
+中文字体实测。
+
+### Added
+
+- `penpot.fonts.findByName("Noto Sans SC")` 可用（`gfont-noto-sans-sc`，9 个字重）；`Microsoft YaHei`/`PingFang SC`/`Source Han Sans` 返回 `null`。
+- 设置中文字体需同时写 `fontId`/`fontVariantId`/`fontFamily`，改完字体后可能需要再等待一次布局。
+
 ## v0.5.0
 
 实测结论收敛到 README。

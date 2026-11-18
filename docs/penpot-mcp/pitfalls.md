@@ -143,6 +143,8 @@ await penpot.waitForLayoutUpdate();
 - `fontSize`、`lineHeight`、`letterSpacing`、`fontWeight` 读回来是**字符串**（如 `"16"`、`"1.2"`），计算前先 `parseFloat` `[实测]`。
 - `fontFamily` 返回字体 id（如 `sourcesanspro`），不是显示名；查字体用 `penpot.fonts.findByName("Source Sans Pro")` `[实测]`。
 - 中文渲染可用（导出 PNG 目视确认），但字体族仍是默认字体，必要时显式指定中文字体。
+- 中文字体：`penpot.fonts.findByName("Noto Sans SC")` 可用（`fontId="gfont-noto-sans-sc"`，9 个字重）；`Microsoft YaHei`/`PingFang SC`/`Source Han Sans` 返回 `null` `[实测]`。
+- 设置字体：`text.fontId = f.fontId; text.fontVariantId = "regular"; text.fontFamily = f.fontFamily`；改完字体后布局可能晚一拍结算，必要时再 `await waitForLayoutUpdate()` 后复读高度 `[实测]`。
 
 ## 4. 图片与填充
 

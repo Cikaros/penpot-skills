@@ -76,6 +76,7 @@ text.fontSize = 16;
 - `resize()` 必然把 `growType` 重置为 `"fixed"`（实测）。
 - 自动尺寸异步生效：`await penpot.waitForLayoutUpdate()` 后再读宽高。
 - `fontSize`/`lineHeight`/`letterSpacing`/`fontWeight` 读回是字符串，计算前 `parseFloat`。
+- 中文用 `penpot.fonts.findByName("Noto Sans SC")`（实测可用，`gfont-noto-sans-sc`）；系统字体名如 `Microsoft YaHei` 返回 `null`。设置时同时写 `fontId`/`fontVariantId`/`fontFamily`。
 - 溢出优先查“宽度是否给对”与 `growType`，不要先缩字号。
 
 ## 4. 图片与填充
