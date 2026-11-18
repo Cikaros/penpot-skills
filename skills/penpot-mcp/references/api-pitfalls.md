@@ -114,6 +114,24 @@ cmp.mainInstance();
 - 新建颜色/字体/组件：`createColor()` / `createTypography()` / `createComponent(shapes)`。
 - 优先用组件实例，不要复制形状仿造。
 
+### 6.1 颜色 token 绑定（2.18.7 实测）
+
+```js
+const color = penpot.library.local.createColor();
+color.name = "color-brand-primary";
+color.color = "#3366FF";
+
+shape.fills = [{
+  fillOpacity: 1,
+  fillColor: color.color,                       // hex
+  fillColorRefId: color.id,                     // 必填
+  fillColorRefFile: penpot.currentFile.id       // 必填
+}];
+```
+
+- 直接把 `color` 对象赋给 `fillColor` 会报 `Value not valid`。
+- `tokenOverview()` 在无 token 时返回 `{}`；以 `library.local.colors` 为准。
+
 ## 7. 执行环境
 
 - 无 `location`/`window`/`document`（实测）；`location.origin` 会直接抛错。

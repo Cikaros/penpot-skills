@@ -6,6 +6,16 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.3.1
+
+补充 token 与布局实测。
+
+### Added
+
+- 颜色 token 绑定：`fillColor` + `fillColorRefId` + `fillColorRefFile` 三字段写法；直接传 `LibraryColor` 会报 `Value not valid`。
+- grid 布局 `columns`/`rows` 在本版本为只读 getter 的记录。
+- `tokenOverview()` 无 token 时返回 `{}`，应以 `library.local.colors` 为准。
+
 ## v0.3.0
 
 以 Penpot `2.18.7` 实测重写避坑文档与技能规则，改为"先探测、再分支"。

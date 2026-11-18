@@ -189,6 +189,28 @@ const css = penpot.generateStyle([board], { type: "css", includeChildren: true }
 - 输出里的颜色是 8 位十六进制（如 `#ff0000FF`），转代码时按目标平台转换。
 - `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
+### 6.1 Token 与库颜色
+
+```js
+const lib = penpot.library.local;
+const color = lib.createColor();          // 成功，加入本地库 [实测]
+color.name = "color-brand-primary";
+color.color = "#3366FF";
+
+// ❌ 直接把 LibraryColor 对象塞进 fills 会报 Value not valid
+// ✅ 用 hex + ref 字段绑定，三者缺一不可
+shape.fills = [{
+  fillOpacity: 1,
+  fillColor: color.color,
+  fillColorRefId: color.id,
+  fillColorRefFile: penpot.currentFile.id
+}];
+```
+
+- `fill` 的可写字段包括 `fillColor`、`fillOpacity`、`fillColorRefId`、`fillColorRefFile`、`fillImage` `[实测]`。
+- `tokenOverview()` 在无 token 时返回 `{}`，不要把它当作“库为空”的唯一依据，直接查 `penpot.library.local.colors` 更可靠 `[实测]`。
+- grid 布局对象的 `columns`/`rows` 在本版本是只读 getter，直接赋值会报 `only a getter` `[实测]`；需要网格时先确认当前版本是否提供写入方法。
+
 ## 7. 执行环境与工具面
 
 - `[实测]` 执行上下文没有 `location`/`window`/`document`；写 `location.origin` 会直接 `Cannot read properties of undefined`。
