@@ -22,7 +22,9 @@ return board.children.map(c => c.name);
 ## 2. 图片守卫 + 替换
 
 ```js
-const bytes = penpotUtils.atob(base64);
+const bytes = typeof atob === "function"
+  ? Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+  : penpotUtils.base64ToByteArray(base64);
 const h = Array.from(bytes.slice(0, 4));
 const ok = (h[0] === 0x89 && h[1] === 0x50) || (h[0] === 0xff && h[1] === 0xd8)
         || String.fromCharCode(...h).startsWith("GIF")

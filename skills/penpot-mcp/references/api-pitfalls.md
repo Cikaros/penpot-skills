@@ -1,121 +1,124 @@
-# Penpot Plugin API 陷阱清单
+# Penpot Plugin API 陷阱清单（紧凑版）
 
-来源：官方 MCP `prompts.yml`（High-Level Overview）+ `PenpotUtils.ts` 实现。只列会**静默产出错误设计**的点。
+> 实测基线：Penpot `2.18.7`，2026-11-19。跨版本使用前先跑 `pitfalls.md` 第 0 节的探测。
+> 只列**会静默产出错误设计**的点；每条都给出可执行的替代写法。
 
-## 目录
-1. 层级与插入
-2. 几何与布局
-3. 文本
-4. 图片与填充
-5. 查找工具的真实语义
-6. 库与组件
-7. 代码执行环境
+## 0. 探测模板
+
+```js
+const t = v => typeof v;
+return {
+  version: penpot.version,
+  naturalOrder: penpot.flags?.naturalChildOrdering,
+  globals: { location: t(location), atob: t(atob), TextDecoder: t(TextDecoder), Blob: t(Blob) },
+  utils: Object.getOwnPropertyNames(penpotUtils).filter(n => !["length","name","prototype"].includes(n)),
+  user: (() => { try { return penpot.currentUser?.id ?? null; } catch (e) { return "ERR " + e; } })()
+};
+```
 
 ## 1. 层级与插入
 
 ```js
-// ✅ 普通容器末尾追加
-parent.insertChild(parent.children.length, shape);
+// ✅ 统一用 insertChild，索引 = 视觉位置（2.18.7 实测）
+parent.insertChild(parent.children.length, shape);  // 末尾
+parent.insertChild(0, shape);                       // 最前
+parent.insertChild(2, shape);                       // 第三位
 
-// ✅ flex board：按视觉顺序调用，内部插到数组前端
-board.appendChild(shape);
-
-// ✅ 指定索引
-parent.insertChild(index, shape);   // 0-based
-
-// ❌ 会插到不可预测的位置
-parent.appendChild(shape);
-board.flex.appendChild(shape);      // flex 布局的 appendChild 同样不可靠
+// ⚠️ 旧版 flex 下索引可能反向；不确定就先插一个测试块，等待布局后读 y
 ```
 
-- `parent` 为 `null` 表示根形状。
-- reparent：`newParent.insertChild(i, shape)`，绝对 `x/y` 保留；要贴到新父级内部时再 `setParentXY`。
-- 删除用 `shape.remove()`；`remove()` 不能用来"移动"。
+- `parent = null` 表示页面根。
+- 删除用 `shape.remove()`；`remove()` 不是"移动"。
+- reparent 后绝对坐标保留，要贴边再 `setParentXY`。
 
 ## 2. 几何与布局
 
 | 属性 | 读写 | 改法 |
 |---|---|---|
-| `x` / `y` | 可写（页绝对坐标） | 直接赋值 |
+| `x` / `y` | 可写（页面绝对坐标） | 直接赋值 |
 | `width` / `height` | **只读** | `resize(w, h)` |
 | `bounds` | 只读 | `x/y` + `resize()` |
-| `parentX/parentY`、`boardX/boardY` | 只读 | `penpotUtils.setParentXY(shape, px, py)` |
+| `parentX/parentY` | 只读 | `penpotUtils.setParentXY(shape, px, py)` |
 
 ```js
-// 相对父级定位
-penpotUtils.setParentXY(shape, 24, 16);
-// 等价于
-shape.x = shape.parent.x + 24;
-shape.y = shape.parent.y + 16;
+board.insertChild(0, shape);
+await penpot.waitForLayoutUpdate();   // 不等就读，坐标可能全是 0（实测）
 ```
 
-- 有 flex/grid 的 board，**子元素坐标由布局系统接管**，手改 x/y 无效。调 `rowGap/columnGap/padding` 或 `layoutCell`。
-- flex `dir` 为 `row`/`column` 时，`children` 顺序与视觉顺序相反。
-- grid 子元素定位是 1-based 行列；`shape.layoutCell` 可在事后调整。
+- flex/grid 子元素坐标由布局接管，手改 `x/y` 无效。
+- `penpotUtils.getBounds(shape)` 返回页面绝对坐标 `{x,y,width,height}`（实测）。
+- `penpotUtils.addFlexLayout(shape, "row" | "column")` 会按现有 x/y 排序后建立布局（源码可见）。
 
 ## 3. 文本
 
 ```js
-text.characters = "内容";
-text.fontSize = 16;          // 改字号只动这里
-text.growType = "auto-height";
+const text = penpot.createText("内容");  // 默认 auto-width（实测）
+text.resize(240, 40);                    // 先 resize
+text.growType = "auto-height";           // 后设 growType，否则被重置为 fixed
+text.fontSize = 16;
 ```
 
-- `resize()` 会把 `growType` 置为 `"fixed"`，必须显式改回 `auto-width` / `auto-height`。
-- auto 尺寸是异步生效的，读完布局再读 `width/height`（约 100ms 后）。
-- 溢出的常见根因：`growType` 被 resize 改掉，而不是字号太大。
+- `resize()` 必然把 `growType` 重置为 `"fixed"`（实测）。
+- 自动尺寸异步生效：`await penpot.waitForLayoutUpdate()` 后再读宽高。
+- 溢出优先查 `growType`，不要先缩字号。
 
 ## 4. 图片与填充
 
-- `Image` 是遗留类型。现在图片是 **fill**：`shape.fills = [{ fillOpacity: 1, fillImage: imageData }]`。
-- 上传：`const media = await penpot.uploadMediaData(name, bytes, "image/png")`，`bytes` 必须是 `Uint8Array`。
-- 插件环境**没有 `atob`**，用 `penpotUtils.atob(base64)`。
-- 取填充原图：`fill.fillImage.data()`；导出整形状：`shape.export({ type: "png" | "svg" })`。
-- `mode:"fill"` 不支持 SVG，且形状必须真的含 `fillImage`。
-
-上传守卫（务必加）：
-
 ```js
-const head = Array.from(bytes.slice(0, 4));
-const ok = head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47
-        || (head[0] === 0xff && head[1] === 0xd8)
-        || String.fromCharCode(...head).startsWith("GIF")
-        || String.fromCharCode(...head.slice(0,4)) === "RIFF";
-if (!ok) throw new Error("source bytes are not an image: " + String.fromCharCode(...bytes.slice(0,5)));
+const bytes = typeof atob === "function"
+  ? Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+  : penpotUtils.base64ToByteArray(b64);
+
+// 上传前魔数守卫
+const h = Array.from(bytes.slice(0, 4));
+const ok = (h[0] === 0x89 && h[1] === 0x50) || (h[0] === 0xff && h[1] === 0xd8)
+        || String.fromCharCode(...h.slice(0,3)) === "GIF"
+        || String.fromCharCode(...h) === "RIFF";
+if (!ok) throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
+
+const media = await penpot.uploadMediaData("hero.png", bytes, "image/png");
+if (!media.width || !media.height) throw new Error("zero decoded size");
 ```
 
-以 `<html`、`<!doc`、`{` 开头 → 一定是错误页/JSON 报错，**停止上传**。
+- 取原图：`const data = await fill.fillImage.data()`（返回 Promise，实测）。
+- 导出：`const out = await shape.export({ type: "png" | "svg" })`（Promise\<Uint8Array\>，实测）。
+- 环境差异：2.18.7 有原生 `atob`，**没有** `penpotUtils.atob`，有 `base64ToByteArray`。三者按探测结果选。
+- 没有 `TextDecoder`/`Blob`（实测），不要用它们解字节。
+- 保留原 fill 的其它属性：`fills[i] = { ...fills[i], fillImage: media }`。
 
 ## 5. 查找工具的真实语义
 
 ```js
-penpotUtils.findShapes(pred, root = penpot.root) // 默认只在当前页
-penpotUtils.findShape(pred, root = null)         // 默认跨所有页面
-penpotUtils.findShapeById(id)                    // 跨所有页面
-penpotUtils.analyzeDescendants(root, fn, depth)  // 从 root 的子级开始，不含 root 自身
+penpotUtils.findShapes(pred)             // 2.18.7 跨所有页面（实测），旧版可能只搜当前页
+penpotUtils.findShapes(pred, page.root)  // 推荐：显式限定
+penpotUtils.findShape(pred)              // 跨页面，返回第一个
+penpotUtils.findShapeById(id)            // 按 id
+penpotUtils.analyzeDescendants(root, fn, depth?)
 ```
 
-- `findShapes` 与 `findShape` 的默认搜索范围**不对称**，跨页场景必须显式传根。
-- `analyzeDescendants` 的回调返回非空值才收集；用它返回"修复函数"再统一执行，比边遍历边改安全。
-- `isContainedIn(child, parent)` 只比较几何包围盒，**不代表视觉内容不溢出**（后代可能越界）。
-- `generateCss(shape)` 会 `penpot.openPage(page)`，是有副作用的操作。
+- `analyzeDescendants` 的签名是 `(shape, callback(root, node), maxDepth?)`，返回 `[{shape, result}]`，**不含 root 自身**（实测）。回调返回 `null/undefined` 的节点会被丢弃。
+- 名称里的 `/` 写入即变成 `" / "`（实测）：`btn/Primary` → `btn / Primary`。精确匹配前归一化，或改用 `-`。
+- `isContainedIn(child, parent)` 只比几何包围盒，不代表后代不溢出。
+- `generateCss` 可能切换当前页（推断），调用前记录 `currentPage.id`。
 
 ## 6. 库与组件
 
 ```js
 const lib = penpot.library.local;
 const cmp = lib.components.find(c => c.name.includes("Button"));
-const inst = cmp.instance();          // 返回 Shape（常是 Board）
-cmp.mainInstance();                   // 主组件形状
+const inst = cmp.instance();
+cmp.mainInstance();
 ```
 
-- 本地库：`penpot.library.local`；已连接：`penpot.library.connected`。
-- 新建颜色/字体/组件分别用 `createColor()` / `createTypography()` / `createComponent(shapes)`。
-- 优先复用组件实例，不要复制形状来"仿造"组件。
+- 本地库 `penpot.library.local`，已连接库 `penpot.library.connected`。
+- 新建颜色/字体/组件：`createColor()` / `createTypography()` / `createComponent(shapes)`。
+- 优先用组件实例，不要复制形状仿造。
 
-## 7. 代码执行环境
+## 7. 执行环境
 
-- 代码以 `new Function(...)` 执行，**没有模块作用域**；不要写 `import`/`export`。
-- 跨调用状态放 `storage`（`storage.foo = ...`），普通变量会丢。
-- 返回值会被 `JSON.stringify(..., null, 2)`，无法序列化的对象（如 shape 本身）只会得到浅层字段；**返回 id/name/数值，不要返回 shape 对象**。
-- Toast/通知、`console` 输出都会作为独立字段返回；仍有 30 秒硬超时。
+- 无 `location`/`window`/`document`（实测）；`location.origin` 会直接抛错。
+- 无模块作用域，不要写 `import`/`export`。
+- 跨调用状态放 `storage`。
+- 返回值走 JSON 序列化；返回 id/name/数值，不返回 shape 对象。
+- 单次 30 秒硬超时；批量操作分片、可重入。
+- 只暴露 `execute_code` 的部署里，没有 `export_shape`/`import_image`；用 `shape.export()` 与 `uploadMediaData` 替代。

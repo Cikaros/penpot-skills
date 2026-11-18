@@ -11,7 +11,7 @@ docs/
   penpot-mcp/        第一部分：MCP 使用说明、规范与注意事项
     usage.md         连接形态、工具契约、调用顺序
     conventions.md   文件/页面/画板/图层/组件/Token 的命名与分组规范
-    pitfalls.md      API 陷阱目录（会静默产出坏数据的那些）
+    pitfalls.md      API 陷阱 + 版本差异实测矩阵（会静默产出坏数据的那些）
     auth.md          userToken、401、匿名会话、远程模式排查
     cases/           实战案例：首页搭建、图片修复、越界修复、设计转代码
   design/            第二部分：设计思维、理念与设计规范
@@ -47,7 +47,8 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 ## 约定
 
 - 结论必须来自源码或实测；不确定就标注"待验证"，不要写成事实。
-- 规范分两类：**硬规则**（违反即错误，如 `appendChild`）与**项目约定**（可覆盖，如 4pt 间距体系）。文档中必须标明是哪一类。
+- 规范分两类：**硬规则**（违反即错误，如把错误页字节上传成图片）与**项目约定**（可覆盖，如 4pt 间距体系）。文档中必须标明是哪一类。
+- 与版本相关的结论必须标注实测版本（如 Penpot 2.18.7）；跨版本行为先探测再分支，不把单一版本的观察写成永恒事实。
 - 每个技能一个目录：`skills/<name>/SKILL.md`，可带 `references/`；frontmatter 只写 `name` 和 `description`。
 - 说明性文档放 `docs/`，技能目录内不放 README/CHANGELOG。
 

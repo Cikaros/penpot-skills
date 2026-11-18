@@ -29,16 +29,18 @@ get-token = (some-fn get-token-from-cookie get-token-from-authorization)
 **正确判据只有一个**：
 
 ```js
-return {
-  origin: location.origin,
-  user: penpot.currentUser ? { id: penpot.currentUser.id, name: penpot.currentUser.name } : null
-};
+const user = (() => {
+  try { return penpot.currentUser ? { id: penpot.currentUser.id, name: penpot.currentUser.name } : null; }
+  catch (e) { return "ERR " + e; }
+})();
+return { user };
 ```
 
-- `user` 有值 → 登录态正常，问题在用了 `fetch`；改用 `penpot.*`。
-- `user` 为 `null` → 插件所在标签页确实未登录/会话过期，让用户在该标签页登录。
+- `user.id` 有值 → 登录态正常，问题在用了 `fetch`；改用 `penpot.*`。
+- `user === null` → 插件所在标签页确实未登录/会话过期，让用户在该标签页登录。
+- `user` 是 `"ERR ... user:read"` → **插件缺少用户信息权限，不是未登录**；跳过用户信息，继续操作文件即可（2.18.7 实测）。
 
-不要用 `fetch('/api/rpc/command/get-profile')` 判断登录态，它的结果永远是匿名或错误页。
+不要用 `fetch('/api/rpc/command/get-profile')` 判断登录态，它的结果永远是匿名或错误页。也不要写 `location.origin`：执行上下文里没有 `location`。
 
 ## 4. 远程模式（vendor 托管 MCP）
 
@@ -50,7 +52,9 @@ return {
 因此远程部署下导入图片只能走 `execute_code`：
 
 ```js
-const bytes = penpotUtils.atob(base64);           // 插件无 atob
+const bytes = typeof atob === "function"
+  ? Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+  : penpotUtils.base64ToByteArray(base64);   // 2.18.7：无 penpotUtils.atob
 const media = await penpot.uploadMediaData(name, bytes, "image/png");
 const rect = penpot.createRectangle();
 rect.name = name;

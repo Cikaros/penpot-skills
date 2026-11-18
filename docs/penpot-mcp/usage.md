@@ -18,22 +18,23 @@ MCP server **不直接调用** Penpot 的 HTTP API。它通过 WebSocket 把任�
 | remote | `PENPOT_MCP_REMOTE_MODE=true` | 没有 `import_image`；`export_shape` 没有 `filePath` |
 | multi-user | 连接 URL 带 `?userToken=` | 插件 WS 必须带同一 token；重复 token 会被拒绝 |
 
-判断方法：工具清单里没有 `import_image`，就是 remote 或多用户模式。不要在这时尝试调用它。
+判断方法：**以当前会话的工具清单为准**。不同部署暴露的工具不同——本项目实测的一个部署只暴露 `execute_code`，没有 `high_level_overview` / `export_shape` / `import_image`。缺少工具时按现有能力降级（`shape.export()`、`uploadMediaData`），不要判定环境故障。
 
 ## 3. 工具契约
 
 | 工具 | 关键点 |
 |---|---|
-| `high_level_overview` | 返回官方总览；一个会话只调用一次 |
-| `penpot_api_info(type, member?)` | 完整文档超过 2000 字符时只返回概述，必须按 `member` 再查 |
-| `execute_code(code)` | 在插件上下文执行 JS；**单次硬超时 30 秒** |
-| `export_shape(shapeId, format, mode, filePath?)` | `shapeId="selection"` 表示当前选中第一个；`mode="fill"` 取原图（仅 PNG） |
-| `import_image(filePath, x?, y?, width?, height?)` | 仅本地模式；只接受绝对路径；jpg/png/gif/webp |
+| `execute_code(code)` | 必有。插件上下文执行 JS；**单次硬超时 30 秒** |
+| `high_level_overview` | 可选。返回官方总览；一个会话只调用一次 |
+| `penpot_api_info(type, member?)` | 可选。完整文档超过 2000 字符时只返回概述，必须按 `member` 再查 |
+| `export_shape(shapeId, format, mode, filePath?)` | 可选。`shapeId="selection"` 表示当前选中第一个；`mode="fill"` 取原图（仅 PNG） |
+| `import_image(filePath, x?, y?, width?, height?)` | 可选。仅本地模式；只接受绝对路径；jpg/png/gif/webp |
 
 `execute_code` 的细节：
 
 - 代码即函数体，用 `return` 返回；不返回就是 `undefined`。
-- 可用全局：`penpot`、`penpotUtils`、`storage`、`console`。
+- 可用全局：`penpot`、`penpotUtils`、`storage`、`console`；`fetch`/`atob` 视版本存在。
+- **没有** `location`/`window`/`document`（2.18.7 实测），不要写 `location.origin`。
 - 返回值会被 `JSON.stringify(..., null, 2)`，**不要返回 shape 对象**，返回 id/name/数值。
 - `console` 输出单独返回；不要把要返回的数据再 log 一遍。
 - `storage` 跨调用持久，适合存 shape id、基准尺寸、自定义工具函数。
@@ -55,12 +56,12 @@ MCP server **不直接调用** Penpot 的 HTTP API。它通过 WebSocket 把任�
 ## 5. 推荐调用顺序
 
 ```
-预检（currentUser / pages / selection）
-  → high_level_overview（仅一次）
-  → penpot_api_info（按需查具体成员）
+预检（版本 / flags / 权限 / pages / selection）
+  → high_level_overview（有则读一次）
+  → penpot_api_info（有则按需查具体成员）
   → 结构探查（shapeStructure，深度 2–3）
   → 分片修改（每片一类改动）
-  → export_shape 视觉验收
+  → 验收（shape.export 或 export_shape）
   → 汇报（id、数值、证据）
 ```
 

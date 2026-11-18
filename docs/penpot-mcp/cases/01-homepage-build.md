@@ -40,10 +40,10 @@ return { id: board.id, x: board.x, y: board.y, w: board.width, h: board.height }
 ```js
 const board = penpotUtils.findShapeById(storage.homeBoardId);
 const specs = [
-  { name: "sec/TopBar",     h: 56  },
-  { name: "sec/Search",     h: 64  },
-  { name: "sec/QuickTags",  h: 48  },
-  { name: "sec/AIAssistant",h: 180 }
+  { name: "sec-TopBar",     h: 56  },
+  { name: "sec-Search",     h: 64  },
+  { name: "sec-QuickTags",  h: 48  },
+  { name: "sec-AIAssistant",h: 180 }
 ];
 
 let offset = board.children.reduce((sum, c) => Math.max(sum, c.y - board.y + c.height), 0);
@@ -63,6 +63,7 @@ return { children: board.children.map(c => ({ name: c.name, y: c.y, h: c.height 
 要点：
 
 - `insertChild(board.children.length, sec)`，不要 `appendChild`。
+- 名称用 `sec-TopBar` 而不是 `sec/TopBar`：Penpot 会把 `/` 归一化成 `" / "`，导致幂等判断失效、重复执行时插出重复区块。
 - `x/y` 是页面绝对坐标，所以子区块要写成 `board.x` / `board.y + offset`。
 - `offset` 从现有子元素的最大底边算起，保证可重复执行。
 - 剩余 7 个区块用同样方式再跑两次。
@@ -72,7 +73,7 @@ return { children: board.children.map(c => ({ name: c.name, y: c.y, h: c.height 
 文本：
 
 ```js
-const sec = penpotUtils.findShape(s => s.name === "sec/Search", board);
+const sec = penpotUtils.findShape(s => s.name === "sec-Search", board);
 const t = penpot.createText("搜索目的地");
 t.growType = "auto-height";
 t.fontSize = 14;

@@ -19,14 +19,16 @@
 
 ## 2. 画板（Board）
 
-命名格式：`<模块>/<屏幕>-<状态>`
+命名格式：`<模块>-<屏幕>-<状态>`
 
 ```
-home/Home-Default
-vehicle/Add-Empty
-vehicle/Add-Filled
-profile/Profile-Loading
+home-Home-Default
+vehicle-Add-Empty
+vehicle-Add-Filled
+profile-Profile-Loading
 ```
+
+> **不要用 `/` 作分隔符**：Penpot 会在写入时把 `home/Home-Default` 归一化成 `home / Home-Default`（2.18.7 实测），按原名精确查找会永远找不到。若历史文件已经用了 `/`，比较前先 `name.replace(/\s*\/\s*/g, "/")`。
 
 - 一屏一个 board，不要用 group 冒充屏幕。
 - 同尺寸屏幕放在连续区域，横向间距 80px、按 8 的倍数排列。
@@ -36,17 +38,17 @@ profile/Profile-Loading
 
 | 前缀 | 用途 | 示例 |
 |---|---|---|
-| `bg/` | 背景 | `bg/Page` |
-| `nav/` | 导航 | `nav/TopBar` |
-| `card/` | 卡片容器 | `card/Vehicle` |
-| `btn/` | 按钮 | `btn/Primary` |
-| `txt/` | 文本 | `txt/Title` |
-| `img/` | 图片 | `img/Hero` |
-| `ico/` | 图标 | `ico/Arrow` |
-| `input/` | 输入 | `input/Phone` |
-| `div/` | 分隔线 | `div/Hairline` |
+| `bg-` | 背景 | `bg-Page` |
+| `nav-` | 导航 | `nav-TopBar` |
+| `card-` | 卡片容器 | `card-Vehicle` |
+| `btn-` | 按钮 | `btn-Primary` |
+| `txt-` | 文本 | `txt-Title` |
+| `img-` | 图片 | `img-Hero` |
+| `ico-` | 图标 | `ico-Arrow` |
+| `input-` | 输入 | `input-Phone` |
+| `div-` | 分隔线 | `div-Hairline` |
 
-前缀小写，语义名用大驼峰。前缀的价值是让 `findShapes` 的谓词可读、可批量筛选。
+前缀小写，语义名用大驼峰。用 `-` 而不是 `/`：后者会被 Penpot 归一化成 `" / "`，精确匹配失效。前缀的价值是让 `findShapes` 的谓词可读、可批量筛选。
 
 ## 4. 分组
 
@@ -57,13 +59,15 @@ profile/Profile-Loading
 
 ## 5. 组件
 
-命名：`cmp/<domain>/<Component>/<variant>`
+命名：`cmp-<domain>-<Component>-<variant>`
 
 ```
-cmp/base/Button/Primary
-cmp/base/Input/Default
-cmp/vehicle/Card/Compact
+cmp-base-Button-Primary
+cmp-base-Input-Default
+cmp-vehicle-Card-Compact
 ```
+
+同理避开 `/`；组件名需要层级感时用 `__`，不要用斜杠。
 
 - 变体维度不超过 3 个：`size` / `state` / `tone`。
 - 实例保持与主组件同名，便于反查；覆盖只允许文本和图标，不改结构。

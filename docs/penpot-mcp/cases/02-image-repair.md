@@ -13,7 +13,7 @@ const candidates = penpotUtils.findShapes(
 const bad = [];
 for (const s of candidates) {
   const fill = s.fills.find(f => f.fillImage);
-  const data = fill.fillImage.data();      // 若返回 Promise，改成 await
+  const data = await fill.fillImage.data();   // 2.18.7 实测返回 Promise
   const head = String.fromCharCode(...Array.from(data.slice(0, 5)));
   const ok =
     (data[0] === 0x89 && data[1] === 0x50) ||          // PNG
@@ -39,7 +39,9 @@ return { total: candidates.length, badCount: bad.length, bad };
 ## 步骤 3：逐张替换（每片 5–10 张）
 
 ```js
-const bytes = penpotUtils.atob(base64);
+const bytes = typeof atob === "function"
+  ? Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+  : penpotUtils.base64ToByteArray(base64);   // 2.18.7：无 penpotUtils.atob
 
 // 上传前守卫：绝不把错误页存成图片
 const b = Array.from(bytes.slice(0, 4));
@@ -71,14 +73,19 @@ return { shapeId, w: media.width, h: media.height };
 ## 步骤 4：验收
 
 ```js
-const bad = penpotUtils.findShapes(
+const candidates = penpotUtils.findShapes(
   s => s.fills && s.fills.some(f => f.fillImage),
   penpot.root
-).filter(s => {
-  const d = s.fills.find(f => f.fillImage).fillImage.data();
-  return !(d[0] === 0x89 && d[1] === 0x50) && !(d[0] === 0xff && d[1] === 0xd8);
-});
-return { remaining: bad.map(s => s.name) };
+);
+
+const bad = [];
+for (const s of candidates) {
+  const d = await s.fills.find(f => f.fillImage).fillImage.data();
+  const png = d[0] === 0x89 && d[1] === 0x50;
+  const jpg = d[0] === 0xff && d[1] === 0xd8;
+  if (!png && !jpg) bad.push(s.name);
+}
+return { remaining: bad };
 ```
 
 再对含图区块执行 `export_shape` 目视确认。
@@ -92,7 +99,8 @@ return { remaining: bad.map(s => s.name) };
 | 替换后其它样式丢失 | 重建了 fill 对象 | 展开原 fill 再覆盖 `fillImage` |
 | 反复修同一张 | 没有记录已处理 id | 把 id 写入 `storage.fixed` |
 
-## 现场需核对
+## 已知版本差异（2.18.7 实测）
 
-- `fillImage.data()` 是同步还是异步返回（版本差异）。
-- `penpot.uploadMediaData` 的参数顺序与 MIME 要求，用 `penpot_api_info("Penpot", "uploadMediaData")` 确认。
+- `fillImage.data()` 返回 Promise，必须 `await`。
+- 原生 `atob` 可用，`penpotUtils.atob` 不存在；无原生时用 `penpotUtils.base64ToByteArray`。
+- `uploadMediaData(name, bytes, "image/png")` 在插件会话内直接成功，返回正确 `width/height`；401 只出现在手写 `fetch` 调后端时。

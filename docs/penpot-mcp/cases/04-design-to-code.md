@@ -19,13 +19,12 @@ return penpot.selection.map(s => ({ id: s.id, name: s.name, type: s.type, w: s.w
 ```js
 const shape = penpotUtils.findShapeById(storage.selectionIds[0]);
 
-// 官方总览写的是 withChildren，PenpotUtils 内部用的是 includeChildren
-// 执行前务必用 penpot_api_info 核对当前版本
+// 2.18.7 实测：只认 includeChildren；withChildren 被静默忽略
 const css = penpot.generateStyle([shape], { type: "css", includeChildren: true });
 return css;
 ```
 
-> **注意**：`prompts.yml` 的示例用 `withChildren`，`PenpotUtils.generateCss` 用 `includeChildren`。两者不一致，说明至少有一个是过时写法。先查 `penpot_api_info("Penpot", "generateStyle")`，再决定传哪个；传错不会报错，只会静默忽略子元素。
+> **已核实（2.18.7）**：`includeChildren: true` 输出 1230 字符，`false` 输出 158 字符；`withChildren: false` 仍是 1230——说明 `withChildren` 不被读取。统一用 `includeChildren`。
 
 ## 步骤 3：把值映射回 token
 

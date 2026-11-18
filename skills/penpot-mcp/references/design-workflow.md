@@ -46,7 +46,7 @@ Non-goals: 不做品牌改造、不改交互流程
 
 ```js
 // 先拿结构，再生成代码
-const css = penpot.generateStyle(penpot.selection, { type: "css", withChildren: true });
+const css = penpot.generateStyle(penpot.selection, { type: "css", includeChildren: true });
 const markup = penpot.generateMarkup(penpot.selection, { type: "html" }); // 视版本支持
 ```
 
@@ -74,4 +74,4 @@ const markup = penpot.generateMarkup(penpot.selection, { type: "html" }); // 视
 - 在 flex board 里手改 x/y；
 - 追加用了 `appendChild`；
 - 图片填充来自错误页字节；
-- 跨页查找只搜了当前页。
+- 跨页查找只搜了当前页（2.18.7 的 `findShapes` 默认反而跨页，仍需显式传根）。

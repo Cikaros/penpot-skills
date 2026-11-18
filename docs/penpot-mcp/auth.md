@@ -28,23 +28,27 @@
 **判断登录态的正确方式**只有插件 API：
 
 ```js
-return {
-  origin: location.origin,
-  user: penpot.currentUser ? { id: penpot.currentUser.id, name: penpot.currentUser.name } : null
-};
+const user = (() => {
+  try { return penpot.currentUser ? { id: penpot.currentUser.id, name: penpot.currentUser.name } : null; }
+  catch (e) { return "ERR " + e; }
+})();
+return { user };
 ```
 
-- `user` 有值 → 登录正常，问题在用了 `fetch`。
-- `user` 为 `null` → 该标签页确实未登录/已过期。
+- `user.id` 有值 → 登录正常，问题在用了 `fetch`。
+- `user === null` → 该标签页确实未登录/已过期。
+- `user` 为 `"ERR ... user:read"` → 插件缺少用户信息权限，**不是未登录**（2.18.7 实测）；跳过用户信息继续操作文件。
 
-不要用 `fetch('/api/rpc/command/get-profile')` 判断登录，它永远是匿名或错误页。
+不要写 `location.origin`——执行上下文没有 `location`。也不要用 `fetch('/api/rpc/command/get-profile')` 判断登录，它永远是匿名或错误页。
 
 ## 4. 远程模式下的图片导入
 
 远程/多用户模式移除了 `import_image`，改用：
 
 ```js
-const bytes = penpotUtils.atob(base64);
+const bytes = typeof atob === "function"
+  ? Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+  : penpotUtils.base64ToByteArray(base64);
 const media = await penpot.uploadMediaData(name, bytes, "image/png");
 const rect = penpot.createRectangle();
 rect.name = name;

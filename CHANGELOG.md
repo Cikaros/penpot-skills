@@ -6,6 +6,28 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.3.0
+
+以 Penpot `2.18.7` 实测重写避坑文档与技能规则，改为"先探测、再分支"。
+
+### Changed（不兼容）
+
+- 删除"flex 子元素顺序必然相反"：2.18.7 的 `naturalChildOrdering=true`，数组顺序即视觉顺序；改为运行时探测，不确定时用 `waitForLayoutUpdate` 后读 `y` 验证。
+- 删除"插件没有 atob"：2.18.7 原生 `atob` 可用，`penpotUtils.atob` **不存在**，有 `penpotUtils.base64ToByteArray`。
+- 删除 `location.origin` 预检：执行上下文没有 `location`/`window`/`document`。
+- `findShapes` 改为显式传 `root`：2.18.7 不带根会跨所有页面。
+- `analyzeDescendants` 改为真实签名 `(shape, fn(root, node), depth?)`，返回 `[{shape, result}]`。
+- 命名分隔符 `/` 改为 `-`：Penpot 把 `btn/Primary` 归一化为 `btn / Primary`，精确匹配失效。
+- 图片：`fillImage.data()` 与 `shape.export()` 一律 `await`（均返回 Promise）。
+- `generateStyle` 统一用 `includeChildren`（实测 `withChildren` 被静默忽略）。
+
+### Refactored
+
+- `pitfalls.md` 重写为"探测 → 版本矩阵 → 规则 → 验收"，删除逐条追加的编号。
+- `SKILL.md` 重写为版本自适应流程，并补充仅暴露 `execute_code` 时的降级做法。
+- `references/api-pitfalls.md` 压缩为可扫描清单，与实测基线对齐。
+- 案例 01/02/04 同步修正命名、`await`、选项名。
+
 ## v0.2.0
 
 案例集与可复用配方。
