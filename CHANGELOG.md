@@ -6,6 +6,15 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.4.5
+
+代码生成类型与网格限制。
+
+### Added
+
+- `generateStyle` 只接受 `type:"css"`；`generateMarkup` 接受 `html`/`svg`，其它类型报 `Value not valid`。
+- grid 的 `columns`/`rows` 只读，`push` 静默无效；本版本用 flex 或绝对定位。
+
 ## v0.4.4
 
 排版 token 与字体 CSS。

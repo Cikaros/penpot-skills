@@ -241,6 +241,8 @@ const css = penpot.generateStyle([board], { type: "css", includeChildren: true }
 
 - 只认 `includeChildren`；`withChildren` 不生效也不报错 `[实测]`（同一画板：true 1230 字符，false 158 字符，`withChildren:false` 仍是 1230）。
 - 输出里的颜色是 8 位十六进制（如 `#ff0000FF`），转代码时按目标平台转换。
+- `generateStyle` **只接受 `type:"css"`**，`tailwind`/`scss`/`json`/`html` 均报 `Value not valid` `[实测]`。
+- `generateMarkup` 接受 `type:"html"` 与 `type:"svg"`；`json` 报 `Value not valid` `[实测]`。
 - `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
 ### 6.1 Token 与库颜色
@@ -297,7 +299,7 @@ text.lineHeight = typo.lineHeight;
 - `[实测]` `text.typography = typo` 会报 `object is not extensible`；文本只认 `fontId`/`fontVariantId` 等扁平字段。
 - `[实测]` `generateFontFaces([text])` 返回 **Promise<string>**，内容是 `@font-face`，`src` 为字体的绝对 URL。转代码时 `await` 后再拼 CSS。
 - `[实测]` `penpotUtils.findTokensByName("font-body")` 返回 `[]`；排版 token 不在 `findTokensByName` 的索引里，直接查 `library.local.typographies`。
-- grid 布局对象的 `columns`/`rows` 在本版本是只读 getter，直接赋值会报 `only a getter` `[实测]`；需要网格时先确认当前版本是否提供写入方法。
+- grid 布局对象的 `columns`/`rows` 是只读 getter：直接赋值报 `only a getter`，`columns.push(...)` 静默无效（读回仍是 `[]`）`[实测]`。本版本用 flex 或绝对定位，不要用插件 API 配网格。
 
 ### 6.2 阴影、模糊、圆角、透明度
 

@@ -140,6 +140,8 @@ cmp.mainInstance();
 - 本地库 `penpot.library.local`，已连接库 `penpot.library.connected`。
 - 新建颜色/字体/组件：`createColor()` / `createTypography()` / `createComponent(shapes)`。
 - 优先用组件实例，不要复制形状仿造。
+- `generateStyle` 只接受 `type:"css"`；`generateMarkup` 接受 `html`/`svg`（实测）。
+- grid 的 `columns`/`rows` 只读，`push` 也无效；用 flex 或绝对定位（实测）。
 
 ### 6.1 颜色 token 绑定（2.18.7 实测）
 
