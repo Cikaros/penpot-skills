@@ -245,6 +245,8 @@ const css = penpot.generateStyle([board], { type: "css", includeChildren: true }
 - 输出里的颜色是 8 位十六进制（如 `#ff0000FF`），转代码时按目标平台转换。
 - `generateStyle` **只接受 `type:"css"`**，`tailwind`/`scss`/`json`/`html` 均报 `Value not valid` `[实测]`。
 - `generateMarkup` 接受 `type:"html"` 与 `type:"svg"`；`json` 报 `Value not valid` `[实测]`。
+- `generateStyle` 的 CSS 类名与 `generateMarkup` 的 HTML 类名**共用同一基类**（如 `e2ehome-<hash>`、`bgtop-<hash>`），可直接配对；HTML 额外带 `frame`/`shape`/`rect`/`text` 语义类 `[实测]`（39 个 HTML 类中 29 个与 CSS 重合）。
+- 从 CSS 提取类名时正则要过滤纯数字：`.2em` 会被误匹配成类名 `2`。
 - `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
 ### 6.1 Token 与库颜色

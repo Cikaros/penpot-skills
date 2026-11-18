@@ -6,6 +6,15 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.3
+
+设计转代码一致性。
+
+### Added
+
+- `generateStyle` 的 CSS 类名与 `generateMarkup` 的 HTML 类名共用同一基类（39 个 HTML 类中 29 个与 CSS 重合），可直接配对；HTML 额外带语义类。
+- 从 CSS 提取类名需过滤纯数字，避免把 `.2em` 误识别为类名。
+
 ## v0.5.2
 
 设计规范与 Penpot 字段打通。

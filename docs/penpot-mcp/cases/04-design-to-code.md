@@ -26,6 +26,8 @@ return css;
 
 > **已核实（2.18.7）**：`includeChildren: true` 输出 1230 字符，`false` 输出 158 字符；`withChildren: false` 仍是 1230——说明 `withChildren` 不被读取。统一用 `includeChildren`。
 
+CSS 类名与 HTML 类名共用同一基类（如 `e2ehome-<hash>`），可直接配对；HTML 额外带 `frame`/`shape`/`rect`/`text` 语义类。从 CSS 提取类名时过滤纯数字，避免把 `.2em` 当成类名。
+
 ## 步骤 3：把值映射回 token
 
 生成结果里允许出现：
