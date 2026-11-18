@@ -247,6 +247,19 @@ const css = penpot.generateStyle([board], { type: "css", includeChildren: true }
 - `generateMarkup` 接受 `type:"html"` 与 `type:"svg"`；`json` 报 `Value not valid` `[实测]`。
 - `generateStyle` 的 CSS 类名与 `generateMarkup` 的 HTML 类名**共用同一基类**（如 `e2ehome-<hash>`、`bgtop-<hash>`），可直接配对；HTML 额外带 `frame`/`shape`/`rect`/`text` 语义类 `[实测]`（39 个 HTML 类中 29 个与 CSS 重合）。
 - 从 CSS 提取类名时正则要过滤纯数字：`.2em` 会被误匹配成类名 `2`。
+
+### 6.5 批量查色与换色
+
+```js
+const used = penpot.shapesColors([board]);
+// → [{ color:"#ffffff", opacity:1, shapesInfo:[{property:"fill", index:0, shapeId}] }]
+
+penpot.replaceColor([shape], { color: "#FF0000" }, { color: "#00FF00" });
+```
+
+- `[实测]` `shapesColors` 返回数组，每项带 `color`/`opacity`/`shapesInfo`，可用于审计配色。
+- `[实测]` `replaceColor` 的第二、三个参数必须是**对象**（`{color, opacity?}`），传十六进制字符串会报 `Value not valid: {}`。
+- 替换是批量的，会同时改 fills/strokes 中匹配的颜色；执行前先用 `shapesColors` 确认影响面。
 - `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
 ### 6.1 Token 与库颜色

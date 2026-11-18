@@ -6,6 +6,15 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.4
+
+批量查色与换色。
+
+### Added
+
+- `penpot.shapesColors([board])` 返回 `{color, opacity, shapesInfo}` 列表，可审计配色。
+- `penpot.replaceColor(shapes, {color}, {color})` 可批量换色；两个颜色参数必须是对象，传十六进制字符串报 `Value not valid`。
+
 ## v0.5.3
 
 设计转代码一致性。
