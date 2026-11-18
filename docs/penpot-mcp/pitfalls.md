@@ -276,6 +276,27 @@ txt.characters = "实例文本";           // 只改实例，主组件不变
 - `[实测]` 实例文本覆盖后，`cmp.mainInstance()` 的对应文本仍为原值。
 - 实例与主组件同名；定位实例靠自定义 `name` 或 id，不要靠“与主组件不同名”。
 - 不要返回实例上的方法/函数值，会触发 `structuredClone` 错误（见第 7 节）。
+
+### 6.4 排版 token
+
+```js
+const typo = penpot.library.local.createTypography();
+typo.name = "font-body";
+typo.fontSize = "16";
+typo.lineHeight = "1.5";
+typo.fontWeight = "400";
+
+// 不能按引用挂到文本；逐字段复制
+text.fontId = typo.fontId;
+text.fontVariantId = typo.fontVariantId;
+text.fontSize = typo.fontSize;
+text.fontWeight = typo.fontWeight;
+text.lineHeight = typo.lineHeight;
+```
+
+- `[实测]` `text.typography = typo` 会报 `object is not extensible`；文本只认 `fontId`/`fontVariantId` 等扁平字段。
+- `[实测]` `generateFontFaces([text])` 返回 **Promise<string>**，内容是 `@font-face`，`src` 为字体的绝对 URL。转代码时 `await` 后再拼 CSS。
+- `[实测]` `penpotUtils.findTokensByName("font-body")` 返回 `[]`；排版 token 不在 `findTokensByName` 的索引里，直接查 `library.local.typographies`。
 - grid 布局对象的 `columns`/`rows` 在本版本是只读 getter，直接赋值会报 `only a getter` `[实测]`；需要网格时先确认当前版本是否提供写入方法。
 
 ### 6.2 阴影、模糊、圆角、透明度

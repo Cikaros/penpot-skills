@@ -150,3 +150,28 @@ return { type: icon.type, w: icon.width, h: icon.height };
 
 - 给整个 group 设 `fills` 不会生效到子 path。
 - `strokeWidth` 属于 stroke 对象，不属于 shape。
+
+## 9. 排版 token + 字体 CSS
+
+```js
+const typo = penpot.library.local.typographies.find(t => t.name === "font-body")
+  || penpot.library.local.createTypography();
+typo.name = "font-body";
+typo.fontSize = "16";
+typo.lineHeight = "1.5";
+
+text.fontId = typo.fontId;
+text.fontVariantId = typo.fontVariantId;
+text.fontSize = typo.fontSize;
+text.fontWeight = typo.fontWeight;
+text.lineHeight = typo.lineHeight;
+
+text.resize(300, 10);
+text.growType = "auto-height";
+
+const fontCss = await penpot.generateFontFaces([text]);   // Promise<string>
+return { fontCss };
+```
+
+- 不能 `text.typography = typo`，只能逐字段抄（实测）。
+- `generateFontFaces` 是异步的，`await` 后再拼 CSS。

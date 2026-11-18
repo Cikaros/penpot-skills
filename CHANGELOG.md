@@ -6,6 +6,17 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.4.4
+
+排版 token 与字体 CSS。
+
+### Added
+
+- `createTypography()` 可建本地排版 token；字段包含 `fontId`/`fontVariantId`/`fontSize`/`fontWeight`/`lineHeight` 等。
+- 文本不能按引用挂排版 token（`text.typography` 报 `object is not extensible`），只能逐字段复制。
+- `generateFontFaces([text])` 返回 Promise<string>，含 `@font-face` 与字体绝对 URL。
+- `findTokensByName` 不索引排版 token，应查 `library.local.typographies`。
+
 ## v0.4.3
 
 对齐、分布与组件实例。

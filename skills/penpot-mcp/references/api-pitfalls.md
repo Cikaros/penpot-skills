@@ -173,6 +173,25 @@ shape.borderRadius = 12;
 - 阴影透明度必须放在 `color.opacity`，外层 `opacity` 被忽略（实测存 0.2）。
 - `blur` 必须是 `{ value: n }`，直接赋数字被忽略。
 
+### 6.3 排版 token
+
+```js
+const typo = penpot.library.local.createTypography();
+typo.name = "font-body";
+typo.fontSize = "16";
+typo.lineHeight = "1.5";
+
+text.fontId = typo.fontId;
+text.fontVariantId = typo.fontVariantId;
+text.fontSize = typo.fontSize;
+text.fontWeight = typo.fontWeight;
+text.lineHeight = typo.lineHeight;
+```
+
+- `text.typography = typo` 报 `object is not extensible`，只能逐字段复制（实测）。
+- `generateFontFaces([text])` 返回 Promise<string>，含 `@font-face` 与字体绝对 URL（实测）。
+- `findTokensByName` 不索引排版 token，查 `library.local.typographies`。
+
 ## 7. 执行环境
 
 - 无 `location`/`window`/`document`（实测）；`location.origin` 会直接抛错。
