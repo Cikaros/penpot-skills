@@ -91,6 +91,17 @@ if (!media.width || !media.height) throw new Error("zero decoded size");
 - 没有 `TextDecoder`/`Blob`（实测），不要用它们解字节。
 - 保留原 fill 的其它属性：`fills[i] = { ...fills[i], fillImage: media }`。
 
+### 4.4 SVG 图标
+
+```js
+const icon = penpot.createShapeFromSvg(svgText);   // group：base-background + svg-path
+const path = icon.children.find(c => c.type === "path");
+path.strokes = [{ ...path.strokes[0], strokeColor: "#FF0000" }];
+```
+
+- 给 group 设 `fills` 不会给子元素上色；改 path 的 `fills`/`strokes`。
+- `strokeWidth` 在 stroke 对象上。
+
 ## 5. 查找工具的真实语义
 
 ```js
@@ -136,6 +147,20 @@ shape.fills = [{
 
 - 直接把 `color` 对象赋给 `fillColor` 会报 `Value not valid`。
 - `tokenOverview()` 在无 token 时返回 `{}`；以 `library.local.colors` 为准。
+
+### 6.2 阴影/模糊/圆角
+
+```js
+shape.shadows = [{ style: "drop-shadow", offsetX: 0, offsetY: 4, blur: 12, spread: 0,
+  color: { color: "#000000", opacity: 0.12 } }];
+shape.blur = { value: 6 };
+shape.opacity = 0.5;
+shape.borderRadius = 12;
+```
+
+- 属性是 `shadows`（复数）；写 `shadow` 报 `object is not extensible`。
+- 阴影透明度必须放在 `color.opacity`，外层 `opacity` 被忽略（实测存 0.2）。
+- `blur` 必须是 `{ value: n }`，直接赋数字被忽略。
 
 ## 7. 执行环境
 

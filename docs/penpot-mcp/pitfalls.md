@@ -180,6 +180,18 @@ if (!(isPng || isJpeg || isGif || isWebp)) {
 
 `[实测]` `penpot.uploadMediaData` 在插件会话内直接成功，返回正确宽高。401 只出现在手写 `fetch` 调后端接口时——那条路本来就不该走。
 
+### 4.4 SVG 图标
+
+```js
+const icon = penpot.createShapeFromSvg(svgText);   // 返回 group，名 "svg"
+const path = icon.children.find(c => c.type === "path");
+path.strokes = [{ ...path.strokes[0], strokeColor: "#FF0000" }];
+```
+
+- `[实测]` 导入后是 group，包含 `base-background`（rectangle）与 `svg-path`（path）两个子元素。
+- 给 group 设 `fills` **不会**给子元素上色；要改 path 的 `fills` 或 `strokes`。
+- `strokeWidth` 在 stroke 对象上（不是 shape 上）；stroke 可写字段包括 `strokeColor`、`strokeOpacity`、`strokeWidth`、`strokeAlignment`、`strokeCapStart/End`、`strokeColorRefId/File` `[实测]`。
+
 ## 5. 查找与遍历
 
 ```js
@@ -239,6 +251,24 @@ shape.fills = [{
 - `fill` 的可写字段包括 `fillColor`、`fillOpacity`、`fillColorRefId`、`fillColorRefFile`、`fillImage` `[实测]`。
 - `tokenOverview()` 在无 token 时返回 `{}`，不要把它当作“库为空”的唯一依据，直接查 `penpot.library.local.colors` 更可靠 `[实测]`。
 - grid 布局对象的 `columns`/`rows` 在本版本是只读 getter，直接赋值会报 `only a getter` `[实测]`；需要网格时先确认当前版本是否提供写入方法。
+
+### 6.2 阴影、模糊、圆角、透明度
+
+```js
+shape.shadows = [{
+  style: "drop-shadow",
+  offsetX: 0, offsetY: 4, blur: 12, spread: 0,
+  color: { color: "#000000", opacity: 0.12 }   // 必须是嵌套对象
+}];
+shape.blur = { value: 6 };                     // 也是对象，不是数字
+shape.opacity = 0.5;
+shape.borderRadius = 12;                       // 也可用四角独立属性
+```
+
+- `[实测]` 属性名是 **`shadows`**（复数）；写 `shape.shadow` 会报 `object is not extensible`。
+- 阴影颜色必须写成 `{ color, opacity }`；写成 `color:"#000" + opacity` 时 opacity 被忽略，统一存 0.2 `[实测]`。
+- `shape.blur` 需要 `{ value }`；直接赋数字会被忽略，存回默认 4 `[实测]`。
+- 圆角可统一 `borderRadius`，也可用 `borderRadiusTopLeft/TopRight/BottomRight/BottomLeft` `[实测]`。
 
 ## 7. 执行环境与工具面
 

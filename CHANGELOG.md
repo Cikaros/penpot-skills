@@ -6,6 +6,17 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.4.2
+
+样式与图标实测。
+
+### Added
+
+- 阴影属性名是 `shadows`（复数），内层 `color` 必须是 `{color, opacity}`；外层 `opacity` 被忽略。
+- `blur` 必须写 `{value: n}`，直接赋数字会被忽略。
+- 圆角支持四角独立属性。
+- `createShapeFromSvg` 返回 group（`base-background` + `svg-path`）；重着色要改子 path 的 `fills`/`strokes`，`strokeWidth` 在 stroke 对象上。
+
 ## v0.4.1
 
 补齐布局默认值与可复现配方。

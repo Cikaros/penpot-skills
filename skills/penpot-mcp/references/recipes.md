@@ -136,3 +136,17 @@ return {
 ```
 
 返回值里**不要带函数**，否则 `structuredClone` 失败（实测）。
+
+## 8. SVG 图标重着色
+
+```js
+const icon = penpot.createShapeFromSvg(svgText);   // group: base-background + svg-path
+icon.name = "ico-Arrow";
+const path = icon.children.find(c => c.type === "path");
+path.strokes = [{ ...path.strokes[0], strokeColor: "#4F46E5" }];
+// 填充型图标则改 path.fills
+return { type: icon.type, w: icon.width, h: icon.height };
+```
+
+- 给整个 group 设 `fills` 不会生效到子 path。
+- `strokeWidth` 属于 stroke 对象，不属于 shape。
