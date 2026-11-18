@@ -70,6 +70,7 @@ const markup = penpot.generateMarkup(penpot.selection, { type: "html" }); // 视
 **停止条件**：简报里的 Quality 全部满足，且导出图无回归。不要为了"更精致"继续加改动。
 
 **常见返工原因**（提前避免）：
+- 文本没先给宽度（默认 1px），设了 `auto-height` 后被逐字换行；
 - 用 `resize` 改文字导致 `growType` 变 fixed；
 - 在 flex board 里手改 x/y；
 - 追加用了 `appendChild`；

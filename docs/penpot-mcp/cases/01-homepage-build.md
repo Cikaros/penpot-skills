@@ -75,8 +75,9 @@ return { children: board.children.map(c => ({ name: c.name, y: c.y, h: c.height 
 ```js
 const sec = penpotUtils.findShape(s => s.name === "sec-Search", board);
 const t = penpot.createText("搜索目的地");
-t.growType = "auto-height";
 t.fontSize = 14;
+t.resize(sec.width - 32, 10);   // 必须先给宽度：默认宽度只有 1px
+t.growType = "auto-height";
 sec.insertChild(sec.children.length, t);
 penpotUtils.setParentXY(t, 16, 20);
 ```
@@ -117,4 +118,4 @@ return {
 ## 现场需核对
 
 - 画板是否启用 flex/grid：启用后子元素坐标由布局接管，本案例的 `y` 赋值会失效。
-- `penpot.createText` 的签名与默认 `growType`：用 `penpot_api_info("Penpot", "createText")` 确认。
+- `penpot.createText` 的默认宽度是 1px，必须 `resize(width, h)` 后再设 `auto-height`（本案例已按此写法）。

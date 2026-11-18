@@ -6,6 +6,22 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.4.0
+
+文本链路与端到端页面的实测补充。
+
+### Added
+
+- 文本默认宽度只有 **1px**：不先 `resize(width, h)` 就设 `auto-height` 会逐字换行（14px 短句实测 152px 高，给 300px 宽后回到 17px）。
+- 文本数值字段（`fontSize`/`lineHeight`/`letterSpacing`/`fontWeight`）读回为字符串，计算前需 `parseFloat`。
+- `fontFamily` 返回字体 id，字体查询用 `penpot.fonts.findByName`。
+- 端到端验收：390×844 首页 24 个子元素，10 项包含性检查全通过；中文导出 PNG 目视正常。
+
+### Changed
+
+- 案例 01 的文本创建示例改为“先 resize 宽度，再设 growType”。
+- `SKILL.md`、`api-pitfalls.md`、`design-workflow.md` 同步文本新规则。
+
 ## v0.3.1
 
 补充 token 与布局实测。

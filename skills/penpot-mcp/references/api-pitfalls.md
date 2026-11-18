@@ -52,15 +52,17 @@ await penpot.waitForLayoutUpdate();   // 不等就读，坐标可能全是 0（�
 ## 3. 文本
 
 ```js
-const text = penpot.createText("内容");  // 默认 auto-width（实测）
-text.resize(240, 40);                    // 先 resize
+const text = penpot.createText("内容");  // 默认 auto-width，但宽度只有 1px（实测）
+text.resize(240, 10);                    // 必须先给宽度
 text.growType = "auto-height";           // 后设 growType，否则被重置为 fixed
 text.fontSize = 16;
 ```
 
+- 不先 resize 就设 `auto-height`：文本按 1px 宽逐字换行，14px 的短句可高达 152px（实测）；给 300px 宽后回到 17px。
 - `resize()` 必然把 `growType` 重置为 `"fixed"`（实测）。
 - 自动尺寸异步生效：`await penpot.waitForLayoutUpdate()` 后再读宽高。
-- 溢出优先查 `growType`，不要先缩字号。
+- `fontSize`/`lineHeight`/`letterSpacing`/`fontWeight` 读回是字符串，计算前 `parseFloat`。
+- 溢出优先查“宽度是否给对”与 `growType`，不要先缩字号。
 
 ## 4. 图片与填充
 

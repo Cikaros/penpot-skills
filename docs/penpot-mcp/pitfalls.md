@@ -91,16 +91,19 @@ penpotUtils.setParentXY(shape, 24, 16);
 ## 3. 文本
 
 ```js
-const text = penpot.createText("标题");   // 默认 growType "auto-width" [实测]
-text.growType = "auto-height";
-text.resize(240, 40);                     // resize 会把 growType 重置为 "fixed" [实测]
-text.growType = "auto-height";            // 必须放在 resize 之后
+const text = penpot.createText("标题");   // 默认 growType "auto-width"，但宽度只有 1px [实测]
+text.fontSize = 20;
+text.resize(240, 10);                     // 必须先给宽度；resize 会把 growType 重置为 "fixed"
+text.growType = "auto-height";            // 再设 auto-height，高度才会按宽度自然换行
 await penpot.waitForLayoutUpdate();
 ```
 
-- 顺序固定：**先 resize，后设 growType**。
-- 改字号只动 `fontSize`，不要用 resize 模拟。
-- 文本溢出的第一嫌疑是 `growType` 被重置，不是字号太大。
+- **默认宽度是 1px**。不先 `resize(width, h)` 就设 `auto-height`，文本会按 1px 宽度逐字换行：14px 的 10 个字能测出 152px 高 `[实测]`。
+- 同一段文本给到 300px 宽后，高度从 152px 降为 17px `[实测]`。
+- 顺序固定：**先 resize（带目标宽度），后设 growType**。
+- `fontSize`、`lineHeight`、`letterSpacing`、`fontWeight` 读回来是**字符串**（如 `"16"`、`"1.2"`），计算前先 `parseFloat` `[实测]`。
+- `fontFamily` 返回字体 id（如 `sourcesanspro`），不是显示名；查字体用 `penpot.fonts.findByName("Source Sans Pro")` `[实测]`。
+- 中文渲染可用（导出 PNG 目视确认），但字体族仍是默认字体，必要时显式指定中文字体。
 
 ## 4. 图片与填充
 

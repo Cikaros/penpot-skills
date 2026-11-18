@@ -56,7 +56,7 @@ return {
 2. **插入**：统一 `parent.insertChild(index, shape)`；索引 0-based，2.18.7 下即视觉位置。不确定版本顺序时，先插一个测试块，`await penpot.waitForLayoutUpdate()` 后读 `y` 验证，再批量插入。
 3. **等布局**：任何改子元素/改尺寸后，读坐标前先 `await penpot.waitForLayoutUpdate()`。未等待时新插入元素的 `y` 可能全是 0（实测）。
 4. **几何**：`width/height` 只读 → `resize(w,h)`；`parentX/parentY` 只读 → `penpotUtils.setParentXY(shape,x,y)`；`bounds` 只读。
-5. **文本**：`createText` 默认 `auto-width`；`resize()` 会把 `growType` 重置为 `"fixed"`，所以**先 resize，后设 growType**，再等待布局后复读尺寸。
+5. **文本**：`createText` 默认 `auto-width`，但**宽度只有 1px**；必须先 `resize(目标宽度, 10)` 再设 `growType="auto-height"`，否则文本按 1px 宽逐字换行（实测 14px 短句可测出 152px 高）。`resize()` 会把 `growType` 重置为 `"fixed"`，所以顺序不能反。
 6. **z 序**：由 `children` 顺序决定，先背景后前景；调整用 `bringToFront/sendToBack/setParentIndex`。
 7. **不发明样式**：只用已有 token / library / 组件；缺信息就问或留空，禁止自创颜色、字体、断点。
 8. **不重复日志**：`return` 的数据不要再用 `console.log` 打一遍。
