@@ -93,3 +93,22 @@
 - 卡片圆角 8、按钮圆角 10 这种"差一点"的不一致。
 - 用阴影表达层级，同时又用边框表达层级。
 - 一屏出现 3 种以上灰色文字。
+
+## 8. Penpot 字段映射（2.18.7 实测）
+
+规范里的 token 落到 Penpot 插件 API 时，按这张表写：
+
+| 规范项 | Penpot 字段 / 写法 |
+|---|---|
+| 间距 | `x/y` 或 `penpotUtils.setParentXY`；flex 用 `rowGap`/`columnGap`/padding |
+| 字阶 | `fontSize`/`lineHeight`/`fontWeight`；先 `resize(width,h)` 再 `growType="auto-height"` |
+| 中文字体 | `findByName("Noto Sans SC")`，写 `fontId`+`fontVariantId`+`fontFamily` |
+| 颜色角色 | `fills:[{fillColor, fillColorRefId, fillColorRefFile}]`，三者缺一不可 |
+| 圆角 | `borderRadius`，或四角独立 `borderRadiusTopLeft` 等 |
+| 阴影 | `shadows:[{style,offsetX,offsetY,blur,spread,color:{color,opacity}}]` |
+| 模糊 | `blur:{value:n}` |
+| 图标 | `createShapeFromSvg`，改子 `path.strokes`/`fills` |
+| 断点 | 用 board 宽度表达；插件 API 的 grid `columns` 只读，不要用它做栅格 |
+| 组件五态 | `createComponent` 主组件 + `instance()`，实例只覆盖文本/图标 |
+
+> 以上字段在 2.18.7 上逐项验证；跨版本先跑 `docs/penpot-mcp/pitfalls.md` 第 0 节探测。
