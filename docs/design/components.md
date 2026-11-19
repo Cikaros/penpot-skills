@@ -22,11 +22,12 @@
 ## 3. 命名
 
 ```
-cmp/<domain>/<Component>/<variant>
+cmp-<domain>-<Component>-<variant>
 ```
 
 - `domain` 取业务域：`base`、`vehicle`、`profile`、`payment`。
-- 实例沿用组件名，后缀标状态：`btn/Primary-Disabled`。
+- 实例沿用组件名，后缀标状态：`btn-Primary-Disabled`。
+- **不要用 `/` 分隔**：Penpot 会归一化成 `" / "`，按原名精确查找会失败。
 - 不使用 `Frame 123`、`Group 45` 这类默认名进入交付。
 
 ## 4. 实例使用规则

@@ -6,6 +6,16 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.6
+
+命名一致性巡检。
+
+### Fixed
+
+- `components.md` 的组件命名从 `cmp/<domain>/<Component>/<variant>` 改为 `cmp-<domain>-<Component>-<variant>`；实例后缀同步改为 `btn-Primary-Disabled`。
+- `prompt-brief.md` 的画板/组件引用改为 `profile-Profile-Default`、`home-Home-Default`、`cmp-base-*`。
+- `visual-spec.md` 明确：`space/4` 等是规范标识，落到 Penpot 名称时用 `-`。
+
 ## v0.5.5
 
 组件变体 API 实测。

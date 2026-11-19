@@ -16,9 +16,9 @@ Non-goals: 本次明确不做的事
 ## 2. 示例 A：修复缺图与错位
 
 ```text
-Context: 移动端 App，文件 app-mobile-v2，页面 03-Screens，画板 profile/Profile-Default（390×844）
+Context: 移动端 App，文件 app-mobile-v2，页面 03-Screens，画板 profile-Profile-Default（390×844）
 Goal: 恢复"我的"页 18 个图片位，并修正 102 个子元素的越界
-Inputs: 现有图标来自 cmp/base/Icon；头像为圆形裁切
+Inputs: 现有图标来自 cmp-base-Icon；头像为圆形裁切
 Constraints: 不改布局结构；图片必须为真实 PNG；不新增颜色
 Quality: 18 个 fillImage 均存在且宽高 > 0；所有子元素在画板内；导出 PNG 目视无空白
 Non-goals: 不重排信息架构，不改文案
@@ -27,9 +27,9 @@ Non-goals: 不重排信息架构，不改文案
 ## 3. 示例 B：新建首页
 
 ```text
-Context: 同一文件，新建页面 03-Screens，画板 home/Home-Default（390×844）
+Context: 同一文件，新建页面 03-Screens，画板 home-Home-Default（390×844）
 Goal: 按 11 个区块还原首页：顶栏、搜索、快捷标签、AI 助手宫格、公告条、双卡、ETC banner、路况横滑、丹霞 banner、公告列表、底栏
-Inputs: 复用 cmp/base/*；间距按 space/*；颜色按 color/*
+Inputs: 复用 cmp-base-*；间距按 space-*；颜色按 color-*
 Constraints: 只用已有 token；横滑区宽度超出画板时用 board clipContent，不缩小子元素
 Quality: 11 个区块齐全；区块间距 24/32；导出图与参考图结构一致
 Non-goals: 不做交互原型，不接真实数据

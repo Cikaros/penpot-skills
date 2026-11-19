@@ -98,6 +98,8 @@
 
 规范里的 token 落到 Penpot 插件 API 时，按这张表写：
 
+> 表中的 `space/4` 等是**规范标识**；落到 Penpot 图层/颜色名时改写为 `space-4`，不要直接带 `/`（会被归一化成 `" / "`）。
+
 | 规范项 | Penpot 字段 / 写法 |
 |---|---|
 | 间距 | `x/y` 或 `penpotUtils.setParentXY`；flex 用 `rowGap`/`columnGap`/padding |
