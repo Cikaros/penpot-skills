@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.1
+
+### Fixed
+
+- 新增 `.github/workflows/pages.yml`：GitHub Pages 的“从分支部署”不支持直接选择 `site/`，改为 Actions 构建并上传 `site/` 产物。
+- `site/.nojekyll` 随站点生成，避免静态资源被 Jekyll 处理。
+- README 补 GitHub Pages 的 Source 设置与首次部署说明；站点相对路径可直接部署在仓库子路径下。
+
 ## v0.7.0
 
 技能迭代：把真实文件 `小纸条` 的 11 屏、45 个交互和单条主流程抽象为可复用方法；只沉淀多屏结构、坐标、贴底安全区、接线和验收，不引入项目主题、品牌色或具体布局。

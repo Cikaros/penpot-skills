@@ -448,6 +448,7 @@ generated.set("index.html", `<!doctype html>
 </body>
 </html>`);
 generated.set("assets/style.css", CSS);
+generated.set(".nojekyll", "");
 
 let errors = 0;
 for (const [rel, content] of generated) {

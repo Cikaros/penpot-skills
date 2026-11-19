@@ -73,6 +73,16 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 
 **想做可点击多屏原型**：先读技能内的 `skills/penpot-mcp/references/screen-kit.md`，再用 `references/recipes.md` 的代码骨架落地。
 
+## 文档站发布
+
+GitHub Pages 的“从分支部署”只能选择仓库根目录或 `/docs`，不能直接选择 `site/`。本仓库用 `.github/workflows/pages.yml` 构建并上传 `site/` 产物：
+
+1. 推送到 `main`，或手动运行 `pages` workflow；
+2. 在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**；
+3. 首次部署完成后访问 `https://<owner>.github.io/<repo>/`。
+
+站点链接全部是相对路径，因此仓库子路径部署不需要额外配置 `base`。
+
 ## 质量门禁
 
 ```bash
