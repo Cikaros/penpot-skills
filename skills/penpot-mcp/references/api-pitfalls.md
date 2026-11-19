@@ -124,7 +124,7 @@ penpotUtils.findShapeById(id)            // 按 id
 penpotUtils.analyzeDescendants(root, fn, depth?)
 ```
 
-- `analyzeDescendants` 的签名是 `(shape, callback(root, node), maxDepth?)`，返回 `[{shape, result}]`，**不含 root 自身**（实测）。回调返回 `null/undefined` 的节点会被丢弃。
+- `analyzeDescendants` 的签名是 `(shape, callback(root, node), maxDepth?)`，返回 `[{shape, result}]`，**不含 root 自身**（实测）。回调返回 `null/undefined` 的节点会被丢弃。`maxDepth=1` 只含直接子级，`2` 含孙级（实测）。
 - 名称里的 `/` 写入即变成 `" / "`（实测）：`btn/Primary` → `btn / Primary`。精确匹配前归一化，或改用 `-`。
 - `isContainedIn(child, parent)` 只比几何包围盒，不代表后代不溢出。
 - `generateCss` 可能切换当前页（推断），调用前记录 `currentPage.id`。

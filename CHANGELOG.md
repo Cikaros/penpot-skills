@@ -6,6 +6,15 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.10
+
+遍历深度语义。
+
+### Added
+
+- `analyzeDescendants` 的 `maxDepth`：`1` 只含直接子级，`2` 含孙级，省略为全量。
+- 隔离复现 `openPage` 未 `await` 时的 `Cannot modify a page that is not currently active`。
+
 ## v0.5.9
 
 高阶导出封装。

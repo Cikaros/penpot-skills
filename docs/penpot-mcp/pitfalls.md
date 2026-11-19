@@ -252,6 +252,8 @@ const issues = penpotUtils.analyzeDescendants(board, (root, node) => {
 // → [{ shape, result }]，只包含回调返回非空的节点；root 自身不在结果里
 ```
 
+- `maxDepth` 按“层”计数：`1` 只含直接子级，`2` 含子级与孙级，省略为全量 `[实测]`。
+
 - `shapeStructure(shape, depth?)` 返回 `{id,name,type,children}` 树，适合先看 2–3 层。
 
 ## 6. 样式与代码生成
