@@ -2,7 +2,7 @@
 
 > 性质：本项目工程化决策的顶层约束。文档、技能、脚本的修改先对齐本文件；局部约定与本文件冲突时，以本文件为准。
 >
-> 基线：仓库 `v0.7.2`，Penpot `2.18.7`，2026-11-19。
+> 基线：仓库 `v0.7.3`，Penpot `2.18.7`，2026-11-19。
 
 ## 1. 北极星
 
@@ -63,7 +63,7 @@ verification/                 # P2：探针与验证日志
 | Token/DTCG 与 CSS 后处理 | `docs/design/tokens.md`、`shared/design-tokens.mjs` | `docs/penpot-mcp/cases/04-design-to-code.md` | 已建立；纯函数测试 + V-07 |
 | 操作配方、代码骨架 | `shared/snippets/` | `docs/penpot-mcp/cases/`、`references/recipes.md` | 已建立；8 个代码块由 `sync-snippets` 生成 |
 | 设计规范 | `docs/design/visual-spec.md`、`components.md` | 无 | 已有 |
-| 静态文档站 | 各 Markdown 源 | `site/`（生成） | 零依赖生成；`site:check` 防过期 |
+| 静态文档站 | 各 Markdown 源 | `site/`（CI 生成，不提交） | Pages workflow 构建；本地默认不校验 |
 | 版本与发布 | `CHANGELOG.md` + git tag | `skills/penpot-mcp/manifest.json` | 已建立；`build-manifest` 校验 |
 
 在生成器落地前，允许保留手工副本，但必须满足：
@@ -75,8 +75,6 @@ verification/                 # P2：探针与验证日志
 ## 5. 质量门禁
 
 ### 5.1 `npm run check`
-
-- **站点**：`scripts/build-site.mjs --check` 校验 `site/` 是否与 Markdown 源一致。
 
 零依赖脚本，必须覆盖：
 
@@ -181,8 +179,8 @@ npm test
 
 ### P3：可选增强（部分完成）
 
-- 静态文档站：已用 `scripts/build-site.mjs` 零依赖生成到 `site/`；
-- 站点链接探针：`verification/probes/09-site-links.mjs`；
+- 静态文档站：已用 `scripts/build-site.mjs` 零依赖生成，由 Pages workflow 在 CI 上传 `site/`；
+- 站点链接探针：`verification/probes/09-site-links.mjs`（需先生成 `site/`）；
 - 浏览器冒烟：用 agent-browser 打开站点并走查；
 - 真实 Penpot 实例上的 Docker + Playwright + 插件 E2E：待真实文件/环境；
 - 按版本自动生成兼容性矩阵：未开始。
@@ -221,7 +219,7 @@ npm test
 
 `site/` 由 `scripts/build-site.mjs` 从 Markdown 直接生成，不引入 VuePress/Docusaurus，也不把内容迁移到 `content/`。这样做的原因是：当前规模只需要可检索的 HTML 与链接校验，框架带来的依赖、构建和安全维护成本高于收益。
 
-站点是派生副本，不是事实源；改内容仍改 Markdown，`site:check` 在 CI 中防止过期。浏览器 E2E 属于后续验证，不以“生成成功”代替。
+站点是派生副本，不是事实源；改内容仍改 Markdown。`site/` 不提交，Pages workflow 在 CI 中生成并上传产物；本地默认不校验站点，避免生成物进入版本库。
 
 ## 9. 知识变更的 Definition of Done
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.3
+
+### Fixed
+
+- 纠正 v0.7.2 对 `enablement: true` 的错误预期：`GITHUB_TOKEN` 没有仓库管理员权限，无法创建 Pages site；移除该参数，恢复标准 `configure-pages` 配置。
+- README 明确 Pages 必须在仓库设置中一次性启用为 **GitHub Actions**；未启用前 workflow 失败属于配置前置条件，不是 `site/` 或相对路径问题。
+- `site/` 改为纯 CI 产物：加入 `.gitignore`，从当前索引与 Git 历史移除；本地 `npm run verify` 不再依赖 `site:check`。
+
 ## v0.7.2
 
 ### Fixed

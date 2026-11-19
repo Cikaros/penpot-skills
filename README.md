@@ -41,7 +41,7 @@ scripts/
   build-manifest.mjs 生成/校验技能目录清单
   build-site.mjs     零依赖生成静态文档站
   install-skill.ps1  带备份与版本戳的技能安装
-site/                由 npm run site 生成的静态文档站
+site/                静态站产物；由 CI 构建，本地不提交（已在 .gitignore）
 test/                纯函数与探针单测
 verification/        探针、验证日志、兼容性矩阵
 CONTRIBUTING.md      贡献流程、内容规则、评审清单
@@ -77,9 +77,13 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 
 GitHub Pages 的“从分支部署”只能选择仓库根目录或 `/docs`，不能直接选择 `site/`。本仓库用 `.github/workflows/pages.yml` 构建并上传 `site/` 产物：
 
-1. 推送到 `main`，或手动运行 `pages` workflow；
-2. 在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**；
+1. 先在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**；
+2. 推送到 `main`，或手动运行 `pages` workflow；
 3. 首次部署完成后访问 `https://<owner>.github.io/<repo>/`。
+
+`site/` 不再提交到仓库，也不参与本地 `npm run verify`；workflow 在 CI 中执行 `npm run site` 后上传产物。若需要本地预览，可手动运行 `npm run site`，生成目录已被 `.gitignore` 忽略。
+
+注意：`GITHUB_TOKEN` 没有仓库管理员权限，不能替仓库创建 Pages site。若 Pages 还没启用，`configure-pages` 会报 `Get Pages site failed` 或 `Resource not accessible by integration`；这是需要在设置里完成的一次性操作，不是站点代码或 `site/` 路径错误。
 
 站点链接全部是相对路径，因此仓库子路径部署不需要额外配置 `base`。
 
@@ -90,8 +94,8 @@ npm test          # 纯函数与探针单测
 npm run check     # 链接、围栏、标题编号、片段一致性、manifest、版本
 npm run sync      # 从 shared/snippets/ 重建 Markdown 代码块
 npm run manifest  # 重建 skills/penpot-mcp/manifest.json
-npm run site      # 重建 site/ 静态文档站
-npm run verify    # check + test（含 site:check）
+npm run site      # 可选：本地预览静态站（site/ 已忽略，不提交）
+npm run verify    # check + test（不依赖 site/）
 ```
 
 工程化决策与阶段划分见 `docs/engineering/COMPASS.md`；改动文档或技能前先对齐该文件。
