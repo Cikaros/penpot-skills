@@ -6,6 +6,14 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.5
+
+组件变体 API 实测。
+
+### Added
+
+- `createVariantFromComponents` 在 2.18.7 对 shape 代理与 id 数组都报 `Value not valid`；变体暂用独立组件 + 命名约定模拟。
+
 ## v0.5.4
 
 批量查色与换色。

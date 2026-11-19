@@ -195,6 +195,7 @@ text.lineHeight = typo.lineHeight;
 - `text.typography = typo` 报 `object is not extensible`，只能逐字段复制（实测）。
 - `generateFontFaces([text])` 返回 Promise<string>，含 `@font-face` 与字体绝对 URL（实测）。
 - `findTokensByName` 不索引排版 token，查 `library.local.typographies`。
+- `createVariantFromComponents` 对 shape 代理/ID 数组都报 `Value not valid`（实测），暂时用独立组件模拟变体。
 
 ## 7. 执行环境
 

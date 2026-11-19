@@ -295,6 +295,7 @@ txt.characters = "实例文本";           // 只改实例，主组件不变
 - `[实测]` 实例文本覆盖后，`cmp.mainInstance()` 的对应文本仍为原值。
 - 实例与主组件同名；定位实例靠自定义 `name` 或 id，不要靠“与主组件不同名”。
 - 不要返回实例上的方法/函数值，会触发 `structuredClone` 错误（见第 7 节）。
+- `[实测]` `penpot.createVariantFromComponents` 在 2.18.7 对 shape 代理与 id 数组都报 `Value not valid ... Code: :shapes`，暂时不要依赖它做变体；用独立组件 + 命名约定模拟。
 
 ### 6.4 排版 token
 
