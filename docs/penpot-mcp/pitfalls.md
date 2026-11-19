@@ -366,7 +366,7 @@ shape.borderRadius = 12;                       // 也可用四角独立属性
 - 单次调用 30 秒硬超时；超时即失败。
 - 返回值会被 JSON 序列化：只返回 `{id,name,x,y,width,height}` 之类的纯数据，不要返回 shape 代理对象。
 - 不要返回**函数值**（如某些 `isComponentInstance` 方法）：会直接报 `message could not be cloned` / `structuredClone` 失败。返回前用 `typeof v === "function" ? "function" : v` 过滤 `[实测]`。
-- `shape.export({type:"png", scale:2})` 支持缩放；`scale:2` 的字节数约为 1 倍时的 2.1 倍 `[实测]`。`type:"svg"` 返回以 `<svg` 开头的 UTF-8 字节 `[实测]`。
+- `shape.export({type:"png", scale:2})` 支持缩放：200×100 的画板，1 倍导出 200×100，2 倍 400×200，0.5 倍 100×50（PNG IHDR 实读）`[实测]`。`type:"svg"` 返回以 `<svg` 开头的 UTF-8 字节 `[实测]`。
 - 页面可 `penpot.createPage()` 后直接 `page.remove()`，不会切换当前页 `[实测]`；适合做临时验收页。
 - 跨调用状态放 `storage`；普通变量不保留。
 

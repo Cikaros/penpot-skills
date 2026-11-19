@@ -204,7 +204,7 @@ text.lineHeight = typo.lineHeight;
 - 跨调用状态放 `storage`。
 - 返回值走 JSON 序列化；返回 id/name/数值，不返回 shape 对象。
 - 不要返回函数（如某些 `isComponentInstance` 方法），否则 `structuredClone` 失败，报 `message could not be cloned`（实测）。
-- `shape.export({type:"png", scale:2})` 支持缩放；`type:"svg"` 返回 UTF-8 字节（实测）。
+- `shape.export({type:"png", scale:2})` 支持缩放；200×100 在 1x/2x/0.5x 下分别为 200×100、400×200、100×50（实测）。`type:"svg"` 返回 UTF-8 字节（实测）。
 - 临时验收页可 `createPage()` → 断言 → `page.remove()`，不会切换当前页（实测）。
 - `openPage(page)` 返回 Promise，必须 `await`；否则目标页未激活，写入报 `Cannot modify a page that is not currently active`（实测）。
 - 单次 30 秒硬超时；批量操作分片、可重入。
