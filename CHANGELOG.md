@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.2
+
+### Fixed
+
+- `pages` workflow 的 `actions/configure-pages` 使用 `enablement: true`，在仓库尚未启用 Pages 时自动创建 Pages site，避免首次部署因 `/pages` 404 失败。
+
 ## v0.7.1
 
 ### Fixed
