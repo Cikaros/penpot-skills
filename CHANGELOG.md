@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.4
+
+### Fixed
+
+- 静态探针测试只在本地存在 `site/index.html` 时运行 `09-site-links.mjs`，使移除本地站点后的 `npm run verify` 不再失败。
+
 ## v0.7.3
 
 ### Fixed

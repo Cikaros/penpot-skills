@@ -1,6 +1,6 @@
 {
   "name": "penpot-skills",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "private": true,
   "type": "module",
   "description": "Penpot MCP usage notes, design specs and installable skills.",

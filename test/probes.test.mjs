@@ -27,7 +27,10 @@ test("execute_code 探针是可解析的函数体", () => {
 });
 
 test("静态探针返回 ok=true", () => {
-  for (const name of ["01-image-kind.mjs", "03-overflow.mjs", "07-css-tokenize.mjs", "09-site-links.mjs"]) {
+  const probes = ["01-image-kind.mjs", "03-overflow.mjs", "07-css-tokenize.mjs"];
+  // site/ is a CI/preview artifact; the link probe only applies when it exists locally.
+  if (fs.existsSync(path.join(root, "site", "index.html"))) probes.push("09-site-links.mjs");
+  for (const name of probes) {
     const output = execFileSync(process.execPath, [path.join("verification", "probes", name)], {
       cwd: root,
       encoding: "utf8",
