@@ -42,6 +42,8 @@ MCP server **不直接调用** Penpot 的 HTTP API。它通过 WebSocket 把任�
 
 ## 4. 连接步骤
 
+> 以下 1–4 步在上游 `penpot/penpot-mcp` 仓库执行；本仓库只含文档、技能与校验脚本，不含 MCP server。这里的 `package.json` 只提供 `check`/`test`/`sync`/`manifest` 等本地门禁命令。
+
 1. `npm run bootstrap` 启动 MCP server 与插件静态服务。
 2. Penpot 打开设计文件 → Plugins 菜单 → 用开发地址加载 `http://localhost:4400/manifest.json`。
 3. 打开插件 UI，点击「Connect to MCP server」。

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "penpot-mcp",
+  "version": "0.6.0",
+  "entry": "SKILL.md",
+  "files": [
+    {
+      "path": "references/api-pitfalls.md",
+      "bytes": 11047,
+      "sha256": "ab1c3457c305f4cddf6660b3d448b0ee8f9a79e3a79f93031dc3e746a284e367"
+    },
+    {
+      "path": "references/auth-and-transport.md",
+      "bytes": 5383,
+      "sha256": "493d875cd087c9f70b89fe08e568172a9ae24891a9aae1877878da474f95aaff"
+    },
+    {
+      "path": "references/design-workflow.md",
+      "bytes": 3979,
+      "sha256": "326749e7c34e13160a3b696ce07ebccfc4c1423a563696a67994d296b9868f6c"
+    },
+    {
+      "path": "references/recipes.md",
+      "bytes": 7658,
+      "sha256": "b742e5eded47af51f4cdb8467da98de567c2efd71d7ad7721c8957b931520ed3"
+    },
+    {
+      "path": "SKILL.md",
+      "bytes": 9875,
+      "sha256": "3551fff62dfa18879e13b300c4e61692662d221a08a725c2719676ad0f25a2c0"
+    }
+  ]
+}

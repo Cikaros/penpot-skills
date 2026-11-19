@@ -1,0 +1,36 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
+function readProbe(name) {
+  return fs.readFileSync(path.join(root, "verification", "probes", name), "utf8");
+}
+
+test("execute_code 探针是可解析的函数体", () => {
+  for (const name of [
+    "00-runtime-readonly.js",
+    "02-layout-wait.js",
+    "04-overflow-live.js",
+    "05-image-upload.js",
+    "06-page-lifecycle.js",
+  ]) {
+    assert.doesNotThrow(() => new AsyncFunction(readProbe(name)), `${name} should parse`);
+  }
+});
+
+test("静态探针返回 ok=true", () => {
+  for (const name of ["01-image-kind.mjs", "03-overflow.mjs"]) {
+    const output = execFileSync(process.execPath, [path.join("verification", "probes", name)], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    const result = JSON.parse(output);
+    assert.equal(result.ok, true, `${name} should pass`);
+  }
+});

@@ -8,11 +8,15 @@ Penpot 相关的**使用规范、避坑手册、设计规范**与可执行 **Ski
 
 ```
 docs/
+  engineering/       工程化设计：原则、单一源、质量门禁、路线图
+    COMPASS.md       工程化设计罗盘（改文档/技能前先读）
   penpot-mcp/        第一部分：MCP 使用说明、规范与注意事项
     usage.md         连接形态、工具契约、调用顺序
     conventions.md   文件/页面/画板/图层/组件/Token 的命名与分组规范
     pitfalls.md      API 陷阱 + 版本差异实测矩阵（会静默产出坏数据的那些）
     auth.md          userToken、401、匿名会话、远程模式排查
+    glossary.md      术语表：page root、shape proxy、parentX、fillImage 等
+    known-unknowns.md 尚未验证的 API/部署差异与关闭条件
     cases/           实战案例：首页搭建、图片修复、越界修复、设计转代码
   design/            第二部分：设计思维、理念与设计规范
     principles.md    设计原则与 AI 协作原则
@@ -21,18 +25,54 @@ docs/
     prompt-brief.md  设计简报模板与示例
 skills/
   penpot-mcp/        可直接安装的 Skill（操作型，短小、可执行）
+shared/
+  penpot-guards.mjs  可测试的纯函数：图片签名、命名、越界、空值守卫
+  snippets/          canonical 代码片段（图片签名等）与同步清单
+scripts/
+  check-docs.mjs     文档与示例的静态门禁
+  sync-snippets.mjs  把 canonical 片段写入 Markdown 标记块
+  build-manifest.mjs 生成/校验技能目录清单
+  install-skill.ps1  带备份与版本戳的技能安装
+test/                纯函数与探针单测
+verification/        探针、验证日志、兼容性矩阵
+CONTRIBUTING.md      贡献流程、内容规则、评审清单
 ```
 ## 快速开始
 
 **只想让 AI 少犯错**：安装技能。
 
 ```powershell
+# 推荐：带备份、版本戳与安装后检查
+.\scripts\install-skill.ps1
+.\scripts\doctor.ps1
+
+# 手动安装（等价于把 skills\penpot-mcp 复制到目标目录）
 Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 ```
+
+### 前置条件
+
+- Penpot `2.18.7`（其他版本先跑 `docs/penpot-mcp/pitfalls.md` 第 0 节探测）。
+- 上游 [`penpot/penpot-mcp`](https://github.com/penpot/penpot-mcp) 已启动，Penpot 插件已加载并连接。
+- Node.js `>=20`：仅用于运行本仓库的校验脚本；技能本身不依赖 Node。
+
+本仓库只含文档、技能与校验脚本，**不含 MCP server**；`usage.md` 里的 `npm run bootstrap` 属于上游仓库。
 
 **想先理解规则**：按顺序读 `docs/penpot-mcp/usage.md` → `conventions.md` → `pitfalls.md`。
 
 **想做设计规范**：读 `docs/design/principles.md` → `visual-spec.md` → `components.md`。
+
+## 质量门禁
+
+```bash
+npm test          # 纯函数与探针单测
+npm run check     # 链接、围栏、标题编号、片段一致性、manifest、版本
+npm run sync      # 从 shared/snippets/ 重建 Markdown 代码块
+npm run manifest  # 重建 skills/penpot-mcp/manifest.json
+npm run verify    # check + test
+```
+
+工程化决策与阶段划分见 `docs/engineering/COMPASS.md`；改动文档或技能前先对齐该文件。
 
 ## 两部分的关系
 
@@ -46,7 +86,7 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 
 ## 实测覆盖（Penpot 2.18.7）
 
-2026-11-19 在真实 Penpot 实例 + 仅暴露 `execute_code` 的 MCP 部署上逐项验证：
+2026-11-19 历史基线：在真实 Penpot 实例 + 仅暴露 `execute_code` 的 MCP 部署上逐项验证（本轮实时复跑状态见下方验证记录）：
 
 | 能力 | 结论 |
 |---|---|
@@ -65,6 +105,15 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 | 查找/遍历 | `findShapes` 不带 root 会跨页；`analyzeDescendants` 回调签名 `(root,node)` |
 
 逐条证据与反例见 `docs/penpot-mcp/pitfalls.md`；可复现骨架见 `skills/penpot-mcp/references/recipes.md`。
+
+> 2026-11-19 刷新 MCP 后，V-00/V-02/V-04/V-05 与案例 01/02/03 已在 Penpot 2.18.7 的临时合成页通过；案例 04 的生成链路通过，但实测不自动 token 化，需要生成后处理。真实项目文件复跑仍未完成。记录见 `verification/log/2026-11-19.md`。
+
+## 验证与已知未知
+
+- `verification/README.md`：探针运行方式与日志规范。
+- `verification/compatibility.md`：Penpot 版本 × 能力矩阵。
+- `docs/penpot-mcp/known-unknowns.md`：尚未能写成事实的 API/部署差异。
+- `skills/penpot-mcp/manifest.json`：安装文件清单与 SHA-256。
 
 ## 约定
 
@@ -87,6 +136,7 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 发布流程：
 
 ```bash
+npm run verify
 git add -A
 git commit -m "feat: ..."
 git tag -a v0.1.0 -m "v0.1.0"

@@ -1,23 +1,28 @@
 # 案例 03：子元素越界修复
 
-**场景**：图层树里元素都在，坐标、尺寸、key 都正确，但画面上看不到。根因通常是父级 board 的 `clipContent` 裁掉了越界子元素。
+**场景**：图层树里元素都在，坐标、尺寸、id 都正确，但画面上看不到。根因通常是父级 board 的 `clipContent` 裁掉了越界子元素。
 
 ## 步骤 1：确认是裁剪而不是删除
 
 ```js
 const board = penpotUtils.findShapeById(storage.boardId);
-const outside = penpotUtils.analyzeDescendants(board, (root, s) => {
-  const px = s.parentX, py = s.parentY;
-  const overflow =
-    px < 0 || py < 0 ||
-    px + s.width > root.width ||
-    py + s.height > root.height;
-  return overflow ? { name: s.name, px, py, w: s.width, h: s.height } : null;
-});
+if (!board) throw new Error("board not found: " + storage.boardId);
+const outside = [];
+(function walk(parent) {
+  for (const child of parent.children || []) {
+    const px = child.parentX, py = child.parentY;
+    if (px < 0 || py < 0 ||
+        px + child.width > parent.width ||
+        py + child.height > parent.height) {
+      outside.push({ id: child.id, name: child.name, parent: parent.name, px, py });
+    }
+    if (child.children?.length) walk(child);
+  }
+})(board);
 return {
   board: { w: board.width, h: board.height, clip: board.clipContent },
   outsideCount: outside.length,
-  sample: outside.slice(0, 10)
+  outside: outside.slice(0, 10)
 };
 ```
 
@@ -41,26 +46,32 @@ penpotUtils.setParentXY(shape, 0, 0);
 
 ```js
 const board = penpotUtils.findShapeById(storage.boardId);
+if (!board) throw new Error("board not found: " + storage.boardId);
 
-const fixes = penpotUtils.analyzeDescendants(board, (root, s) => {
-  const px = s.parentX, py = s.parentY;
-  const overflow = px < 0 || py < 0 ||
-                   px + s.width > root.width ||
-                   py + s.height > root.height;
-  if (!overflow) return null;
+const fixes = [];
+(function walk(parent) {
+  for (const child of parent.children || []) {
+    const px = child.parentX, py = child.parentY;
+    const overflow = px < 0 || py < 0 ||
+                     px + child.width > parent.width ||
+                     py + child.height > parent.height;
 
-  // 仅处理"坐标残留"：相对坐标远大于容器，视为绝对坐标误用
-  if (px > root.width || py > root.height) {
-    return () => penpotUtils.setParentXY(s, 0, 0);
+    // 仅处理“坐标残留”：负值或远大于容器，视为相对坐标误用
+    if (overflow && (px < 0 || py < 0 || px > parent.width || py > parent.height)) {
+      fixes.push({ shape: child, px, py });
+    }
+    if (child.children?.length) walk(child);
   }
-  return null;   // 尺寸问题不在本步自动修
-});
+})(board);
 
-fixes.forEach(f => f.result());
-return { fixed: fixes.length };
+for (const f of fixes) penpotUtils.setParentXY(f.shape, 0, 0);
+return {
+  fixed: fixes.length,
+  sample: fixes.slice(0, 10).map(f => ({ id: f.shape.id, name: f.shape.name, px: f.px, py: f.py }))
+};
 ```
 
-为什么先收集再执行：遍历时改坐标会影响后续判断，先算后改更稳定。
+为什么先收集再执行：遍历时改坐标会影响后续判断，先算后改更稳定。这里检查的是 board 级越界；如果越界发生在嵌套容器，必须按直接父容器再查一遍，不能只用顶层 board 的宽高。
 
 ## 步骤 4：验收
 

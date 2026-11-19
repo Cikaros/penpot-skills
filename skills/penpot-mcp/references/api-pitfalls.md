@@ -50,7 +50,8 @@ await penpot.waitForLayoutUpdate();   // 不等就读，坐标可能全是 0（�
 
 - flex/grid 子元素坐标由布局接管，手改 `x/y` 无效。
 - `penpotUtils.getBounds(shape)` 返回页面绝对坐标 `{x,y,width,height}`（实测）。
-- `penpotUtils.addFlexLayout(shape, "row" | "column")` 会按现有 x/y 排序后建立布局（源码可见）。
+- `penpotUtils.addFlexLayout(shape, "row" | "column")` 会按现有 x/y 排序后建立布局（源码可见）；先建布局再 append、或建后重新 append，2.18.7 合成页都能结算为 0/20/40。
+- `waitForLayoutUpdate` 偶发超时（2026-11-19 合成页一次）；等待加超时上限，超时后先复读坐标。
 
 ### 2.1 对齐与分布
 
@@ -86,12 +87,28 @@ const bytes = typeof atob === "function"
   ? Uint8Array.from(atob(b64), c => c.charCodeAt(0))
   : penpotUtils.base64ToByteArray(b64);
 
-// 上传前魔数守卫
-const h = Array.from(bytes.slice(0, 4));
-const ok = (h[0] === 0x89 && h[1] === 0x50) || (h[0] === 0xff && h[1] === 0xd8)
-        || String.fromCharCode(...h.slice(0,3)) === "GIF"
-        || String.fromCharCode(...h) === "RIFF";
-if (!ok) throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
+// 上传前魔数守卫：完整签名；RIFF 还必须带 WEBP
+// SNIPPET:image-kind:start
+/**
+ * Image signature guard: PNG / JPEG / GIF87a / GIF89a / WEBP.
+ * Requires at least 12 bytes and rejects other RIFF containers (WAV/AVI).
+ */
+function imageKind(bytes) {
+  if (!bytes || typeof bytes.length !== "number" || bytes.length < 12) return null;
+
+  const s = (from, to) => String.fromCharCode(...Array.from(bytes.slice(from, to)));
+
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+      bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) {
+    return "png";
+  }
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
+  if (s(0, 6) === "GIF87a" || s(0, 6) === "GIF89a") return "gif";
+  if (s(0, 4) === "RIFF" && s(8, 12) === "WEBP") return "webp";
+  return null;
+}
+// SNIPPET:image-kind:end
+if (!imageKind(bytes)) throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
 
 const media = await penpot.uploadMediaData("hero.png", bytes, "image/png");
 if (!media.width || !media.height) throw new Error("zero decoded size");
@@ -103,7 +120,7 @@ if (!media.width || !media.height) throw new Error("zero decoded size");
 - 没有 `TextDecoder`/`Blob`（实测），不要用它们解字节。
 - 保留原 fill 的其它属性：`fills[i] = { ...fills[i], fillImage: media }`。
 
-### 4.4 SVG 图标
+### 4.1 SVG 图标
 
 ```js
 const icon = penpot.createShapeFromSvg(svgText);   // group：base-background + svg-path
@@ -118,7 +135,7 @@ path.strokes = [{ ...path.strokes[0], strokeColor: "#FF0000" }];
 
 ```js
 penpotUtils.findShapes(pred)             // 2.18.7 跨所有页面（实测），旧版可能只搜当前页
-penpotUtils.findShapes(pred, page.root)  // 推荐：显式限定
+penpotUtils.findShapes(pred, penpot.currentPage.root)  // 推荐：显式限定
 penpotUtils.findShape(pred)              // 跨页面，返回第一个
 penpotUtils.findShapeById(id)            // 按 id
 penpotUtils.analyzeDescendants(root, fn, depth?)
@@ -141,7 +158,7 @@ cmp.mainInstance();
 - 本地库 `penpot.library.local`，已连接库 `penpot.library.connected`。
 - 新建颜色/字体/组件：`createColor()` / `createTypography()` / `createComponent(shapes)`。
 - 优先用组件实例，不要复制形状仿造。
-- `generateStyle` 只接受 `type:"css"`；`generateMarkup` 接受 `html`/`svg`（实测）。
+- `generateStyle` 只接受 `type:"css"`，支持 `includeChildren` 与 `withPrelude`；`withPrelude:true` 可能带重复的 `html, body` 块，先去重。`generateMarkup` 接受 `html`/`svg`（实测）。
 - grid 的 `columns`/`rows` 只读，`push` 也无效；用 flex 或绝对定位（实测）。
 - `shapesColors([board])` 返回 `{color, opacity, shapesInfo}` 列表；`replaceColor(shapes, {color}, {color})` 的两个颜色参数必须是对象，传字符串报 `Value not valid`（实测）。
 
@@ -162,6 +179,7 @@ shape.fills = [{
 
 - 直接把 `color` 对象赋给 `fillColor` 会报 `Value not valid`。
 - `tokenOverview()` 在无 token 时返回 `{}`；以 `library.local.colors` 为准。
+- `generateStyle` 不会把库颜色转成变量：即使 fill 带 `fillColorRefId`/`fillColorRefFile`，CSS 仍是裸色（实测 `#3366ffFF`）；token 化必须生成后替换。
 
 ### 6.2 阴影/模糊/圆角
 

@@ -49,7 +49,30 @@ return { user };
 const bytes = typeof atob === "function"
   ? Uint8Array.from(atob(base64), c => c.charCodeAt(0))
   : penpotUtils.base64ToByteArray(base64);
+// SNIPPET:image-kind:start
+/**
+ * Image signature guard: PNG / JPEG / GIF87a / GIF89a / WEBP.
+ * Requires at least 12 bytes and rejects other RIFF containers (WAV/AVI).
+ */
+function imageKind(bytes) {
+  if (!bytes || typeof bytes.length !== "number" || bytes.length < 12) return null;
+
+  const s = (from, to) => String.fromCharCode(...Array.from(bytes.slice(from, to)));
+
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+      bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) {
+    return "png";
+  }
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
+  if (s(0, 6) === "GIF87a" || s(0, 6) === "GIF89a") return "gif";
+  if (s(0, 4) === "RIFF" && s(8, 12) === "WEBP") return "webp";
+  return null;
+}
+// SNIPPET:image-kind:end
+if (!imageKind(bytes)) throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
+
 const media = await penpot.uploadMediaData(name, bytes, "image/png");
+if (!media.width || !media.height) throw new Error("decoded size is zero");
 const rect = penpot.createRectangle();
 rect.name = name;
 rect.resize(media.width, media.height);
@@ -62,7 +85,7 @@ return { shapeId: rect.id, w: media.width, h: media.height };
 1. 校验源字节魔数（PNG/JPEG/GIF/WEBP）。
 2. 若源字节以 `<html`/`<!doc` 开头 → 取源那步就拿到错误页，不是上传问题。
 3. 上传后看 `media.width`/`media.height`，为 0 说明服务端没解出图。
-4. `export_shape(id, "png", "shape")` 目视确认。
+4. 有 `export_shape` 且允许 `filePath` 时落盘目视确认；远程模式没有 `filePath` 时，只能做字节/宽高校验，并在汇报里注明“未做视觉确认”。
 5. 不要反复重传同一份坏字节，先修数据源。
 
 ## 6. 症状速查

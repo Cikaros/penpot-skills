@@ -26,7 +26,7 @@ cmp-<domain>-<Component>-<variant>
 ```
 
 - `domain` 取业务域：`base`、`vehicle`、`profile`、`payment`。
-- 实例沿用组件名，后缀标状态：`btn-Primary-Disabled`。
+- 实例图层名用 `btn-<Component>-<variant>-<state>`（如 `btn-Primary-Disabled`）；主组件名用 `cmp-<domain>-...`，通过实例关系反查，不要求字符串完全同名。
 - **不要用 `/` 分隔**：Penpot 会归一化成 `" / "`，按原名精确查找会失败。
 - 不使用 `Frame 123`、`Group 45` 这类默认名进入交付。
 

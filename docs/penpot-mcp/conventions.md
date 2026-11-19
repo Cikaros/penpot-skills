@@ -70,7 +70,7 @@ cmp-vehicle-Card-Compact
 同理避开 `/`；组件名需要层级感时用 `__`，不要用斜杠。
 
 - 变体维度不超过 3 个：`size` / `state` / `tone`。
-- 实例保持与主组件同名，便于反查；覆盖只允许文本和图标，不改结构。
+- 实例图层名用 `btn-<Component>-<variant>-<state>`（如 `btn-Primary-Disabled`）；主组件名用 `cmp-...`，通过实例关系反查，不要求字符串完全同名。覆盖只允许文本和图标，不改结构。
 - 不复制形状来"仿造"组件；要新样式就加变体。
 
 ## 6. Token
@@ -82,6 +82,8 @@ radius/<n>                radius/8
 font/<role>/<step>        font/heading/1
 shadow/<level>            shadow/2
 ```
+
+> `space/4` 等是**规范 ID**；落到 Penpot 名称时用 `space-4`，落到 CSS 变量时用 `--space-4`。不要在图层/组件名称里直接写 `/`。
 
 `role` 只取：`bg` / `text` / `border` / `brand` / `state`。
 

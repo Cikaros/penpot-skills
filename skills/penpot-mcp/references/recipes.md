@@ -27,6 +27,7 @@ return { failed };
 
 ```js
 const board = penpotUtils.findShapeById(storage.boardId);
+if (!board) throw new Error("board not found: " + storage.boardId);
 const name = "sec-Hero";                 // 不用 "/"，会被归一化成 " / "
 if (!board.children.some(c => c.name === name)) {
   const sec = penpot.createBoard();      // 总是先落到页面根
@@ -45,6 +46,7 @@ return board.children.map(c => c.name);
 
 ```js
 const board = penpotUtils.findShapeById(storage.boardId);
+if (!board) throw new Error("board not found: " + storage.boardId);
 let t = penpotUtils.findShape(s => s.name === "txt-Title", board);
 if (!t) {
   t = penpot.createText("标题");
@@ -52,10 +54,17 @@ if (!t) {
   board.insertChild(board.children.length, t);
 }
 t.fontSize = 20;
-t.fontWeight = "700";
+t.fontWeight = "600";           // visual-spec：只用 400/500/600
 t.resize(300, 10);              // 默认宽度只有 1px，必须先给宽度
 t.growType = "auto-height";
-t.fills = [{ fillOpacity: 1, fillColor: "#111827" }];
+const textColor = penpot.library.local.colors.find(c => c.name === "color-text-primary");
+if (!textColor) throw new Error("missing token: color-text-primary");
+t.fills = [{
+  fillOpacity: 1,
+  fillColor: textColor.color,
+  fillColorRefId: textColor.id,
+  fillColorRefFile: penpot.currentFile.id
+}];
 penpotUtils.setParentXY(t, 16, 12);
 await penpot.waitForLayoutUpdate();
 return { w: Math.round(t.width), h: Math.round(t.height), size: parseFloat(t.fontSize) };
@@ -70,16 +79,33 @@ return { w: Math.round(t.width), h: Math.round(t.height), size: parseFloat(t.fon
 const bytes = typeof atob === "function"
   ? Uint8Array.from(atob(base64), c => c.charCodeAt(0))
   : penpotUtils.base64ToByteArray(base64);
-const h = Array.from(bytes.slice(0, 4));
-const ok = (h[0] === 0x89 && h[1] === 0x50) || (h[0] === 0xff && h[1] === 0xd8)
-        || String.fromCharCode(...h).startsWith("GIF")
-        || String.fromCharCode(...h) === "RIFF";
-if (!ok) throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
+// SNIPPET:image-kind:start
+/**
+ * Image signature guard: PNG / JPEG / GIF87a / GIF89a / WEBP.
+ * Requires at least 12 bytes and rejects other RIFF containers (WAV/AVI).
+ */
+function imageKind(bytes) {
+  if (!bytes || typeof bytes.length !== "number" || bytes.length < 12) return null;
+
+  const s = (from, to) => String.fromCharCode(...Array.from(bytes.slice(from, to)));
+
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+      bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) {
+    return "png";
+  }
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
+  if (s(0, 6) === "GIF87a" || s(0, 6) === "GIF89a") return "gif";
+  if (s(0, 4) === "RIFF" && s(8, 12) === "WEBP") return "webp";
+  return null;
+}
+// SNIPPET:image-kind:end
+if (!imageKind(bytes)) throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
 
 const media = await penpot.uploadMediaData(name, bytes, mime);
 if (!media.width || !media.height) throw new Error("zero decoded size");
 
 const shape = penpotUtils.findShapeById(shapeId);
+if (!shape) throw new Error("shape not found: " + shapeId);
 const fills = [...shape.fills];
 const i = fills.findIndex(f => f.fillImage);
 if (i < 0) throw new Error("no image fill");
@@ -92,17 +118,24 @@ return { w: media.width, h: media.height };
 
 ```js
 const board = penpotUtils.findShapeById(storage.boardId);
-const outside = penpotUtils.analyzeDescendants(board, (root, node) =>
-  (node.parentX < 0 || node.parentY < 0 ||
-   node.parentX + node.width > root.width ||
-   node.parentY + node.height > root.height)
-    ? { name: node.name, px: node.parentX, py: node.parentY }
-    : null
-);
-return { count: outside.length, sample: outside.slice(0, 10).map(x => x.result) };
+if (!board) throw new Error("board not found: " + storage.boardId);
+const outside = [];
+(function walk(parent) {
+  for (const child of parent.children || []) {
+    const px = child.parentX, py = child.parentY;
+    if (px < 0 || py < 0 ||
+        px + child.width > parent.width ||
+        py + child.height > parent.height) {
+      outside.push({ id: child.id, name: child.name, parent: parent.name, px, py });
+    }
+    if (child.children?.length) walk(child);
+  }
+})(board);
+return { count: outside.length, outside: outside.slice(0, 10) };
 ```
 
-- 回调签名是 `(root, node)`，返回非空才进结果；结果是 `[{shape, result}]`。
+- `parentX`/`parentY` 是相对**直接父容器**的坐标，所以逐层检查每个 `parent`，不要拿顶层 board 的宽高代替。
+- 返回的是纯数据数组，不含 shape 代理；不要直接把 `analyzeDescendants` 的 `{shape,result}` 放进返回值。
 - 修复用 `penpotUtils.setParentXY(shape, x, y)`；不要靠放大父容器。
 
 ## 6. 颜色 token 绑定

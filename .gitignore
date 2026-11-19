@@ -9,3 +9,12 @@ Thumbs.db
 # Local scratch
 *.tmp
 *.log
+*.bak
+
+# Node tooling (validation scripts are dependency-free)
+node_modules/
+coverage/
+
+# Python tooling (if added later)
+.venv/
+__pycache__/

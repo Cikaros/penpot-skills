@@ -18,16 +18,18 @@ return {
   version: penpot.version,
   naturalOrder: penpot.flags?.naturalChildOrdering,
   globals: { location: t(location), atob: t(atob), TextDecoder: t(TextDecoder) },
+  layoutWait: t(penpot.waitForLayoutUpdate),
   utils: Object.getOwnPropertyNames(penpotUtils).filter(n => !["length","name","prototype"].includes(n)),
   user: probe(() => penpot.currentUser ? penpot.currentUser.id : null),
-  pages: probe(() => penpotUtils.getPages()),
-  selection: penpot.selection.map(s => ({ id: s.id, name: s.name, type: s.type }))
+  pages: probe(() => penpotUtils.getPages().map(p => ({ id: p.id, name: p.name }))),
+  selection: probe(() => penpot.selection.map(s => ({ id: s.id, name: s.name, type: s.type })))
 };
 ```
 
 - `user` 以 `ERR ... user:read` 开头 → 插件无用户权限，**不是未登录**；不要因此让用户重新登录。
 - `location === "undefined"` → 不要写 `location.origin`，也不要碰 DOM。
 - `naturalOrder === true` → 子元素数组顺序 = 视觉顺序（2.18.7 实测）。
+- `layoutWait === "undefined"` → 当前版本没有官方等待函数；先插一个测试块、短轮询读 `y` 验证，再决定是否批量操作。
 - `utils` 里没有 `atob` 但有 `base64ToByteArray` → 用后者解码。
 
 ## 1. 工具契约（随部署变化）
@@ -62,7 +64,7 @@ return {
 8. **不重复日志**：`return` 的数据不要再用 `console.log` 打一遍。
 9. **图片验字节**：上传前查魔数（PNG/JPEG/GIF/WEBP），以 `<html`/`<!doc`/`{` 开头一律中止；上传后再查 `media.width/height` 非 0。
 10. **命名归一化**：名称里的 `/` 会被写成 `" / "`（实测），精确匹配前 `name.replace(/\s*\/\s*/g, "/")`，或改用 `-`/`__`。
-11. **改完必验**：每个页面/画板导出图片目视确认，并做包含性检查。
+11. **改完必验**：有 `export_shape` 时落盘 PNG/SVG 目视确认；只有 `execute_code` 时返回尺寸/字节头并明确声明“未做视觉确认”，不能把头部校验写成目视通过。包含性检查按直接父容器逐层做（见第 3 节）。
 
 ## 3. 标准工作流
 
@@ -83,16 +85,27 @@ penpotUtils.findShapes(s => s.name === target, penpot.currentPage.root)
 **第 4 步 验收**：
 
 ```js
-// 越界巡检（注意签名：回调收到 root 和 node）
-const bad = penpotUtils.analyzeDescendants(board, (root, node) =>
-  penpotUtils.isContainedIn(node, root) ? null : { name: node.name, x: node.x, y: node.y }
-);
-// 视觉验收
+// 越界巡检：按直接父容器逐层检查，parentX/parentY 不能和顶层 board 混用
+const bad = [];
+(function walk(parent) {
+  for (const child of parent.children || []) {
+    const px = child.parentX, py = child.parentY;
+    if (px < 0 || py < 0 ||
+        px + child.width > parent.width ||
+        py + child.height > parent.height) {
+      bad.push({ id: child.id, name: child.name, parent: parent.name, px, py });
+    }
+    if (child.children?.length) walk(child);
+  }
+})(board);
+
+// 视觉验收（有 export_shape 时优先落盘）
 const png = await board.export({ type: "png" });
-return { bytes: png.length, head: Array.from(png.slice(0, 4)) };
+return { outside: bad.slice(0, 10), count: bad.length,
+         bytes: png.length, head: Array.from(png.slice(0, 4)) };
 ```
 
-有 `export_shape` 时优先用它落盘看图；没有时用 `shape.export()` 取字节，至少校验非空与 PNG 头。
+有 `export_shape` 且允许 `filePath` 时，优先落盘后目视确认；只有 `execute_code` 时用 `shape.export()` 取字节，校验非空、PNG 头和宽高，并在汇报里注明“字节校验通过，未做视觉确认”。包含性检查要按直接父容器逐层判断，不能只比顶层 board。
 
 **第 5 步 汇报**：只报改了哪些对象（id/name）、关键数值、验收证据、未完成项。不要复述代码。
 
@@ -107,17 +120,20 @@ return { bytes: png.length, head: Array.from(png.slice(0, 4)) };
 | `Permission user:read is not granted` | 插件缺少用户信息权限 | 不是未登录；跳过用户信息，继续操作文件 |
 | `fetch` 返回 401 / `Anonymous User` | 手写 fetch 没有会话凭据 | 改用 `penpot.*`，这是预期行为 |
 | 上传成功但图片空白、读回 `<html>` | 把错误页当图片存了 | 上传前魔数守卫，重新取源，别重复上传 |
-| 新插入元素 `y` 全是 0 | 布局尚未结算 | `await penpot.waitForLayoutUpdate()` 后复读 |
+| 新插入元素 `y` 全是 0 | 布局尚未结算，或等待事件未触发 | `await penpot.waitForLayoutUpdate()` 后复读；等待加超时上限，超时先清理临时对象再重试 |
 | 按名称找不到（名称含 `/`） | 名称被归一化为 `" / "` | 归一化后比较，或改用 `-` |
 | 元素被裁掉 | 父级 `clipContent` + 子元素越界 | `setParentXY` 归零相对坐标，别放大父级 |
+| `message could not be cloned` | 返回值含函数或 shape/page 代理 | 只返回 id/name/数值；`getPages()` 若返回代理，先 map 成 `{id,name}` |
+| 验收通过但嵌套元素仍被裁 | 只检查了顶层 board | 按直接父容器逐层检查 |
 
 ## 5. 交付前检查清单
 
-- [ ] 所有子元素都在父容器内（含 `clipContent` 的 board）
+- [ ] 所有子元素都在直接父容器内（含 `clipContent` 的 board；逐层检查，不只比顶层）
 - [ ] 没有 0 宽/0 高、没有负尺寸
 - [ ] 文本 `growType` 为 auto，且布局后复读过尺寸
 - [ ] 层级顺序符合遮挡关系
 - [ ] 颜色/字号来自 token 或现有样式
+- [ ] 若导出 CSS：已按 token 表替换裸色（`generateStyle` 不会自动变量化）
 - [ ] 每个改动过的画板都导出图片并目视确认
 - [ ] 图片填充非空（`fillImage` 存在、字节头正常、宽高非 0）
 

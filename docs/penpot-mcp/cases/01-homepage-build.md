@@ -7,9 +7,13 @@
 ## 步骤 0：预检
 
 ```js
+const user = (() => {
+  try { return penpot.currentUser ? penpot.currentUser.name : null; }
+  catch (e) { return "ERR " + e; }   // user:read 缺失不是未登录
+})();
 return {
-  user: penpot.currentUser ? penpot.currentUser.name : null,
-  pages: penpotUtils.getPages(),
+  user,
+  pages: penpotUtils.getPages().map(p => ({ id: p.id, name: p.name })),
   current: penpot.currentFile ? penpot.currentFile.name : null
 };
 ```
@@ -19,12 +23,12 @@ return {
 ```js
 const page = penpotUtils.getPageByName("03-Screens");
 if (!page) throw new Error("page 03-Screens not found");
-penpot.openPage(page);
+await penpot.openPage(page);   // openPage 返回 Promise，不 await 会写不进未激活页面
 
-let board = penpotUtils.findShape(s => s.name === "home/Home-Default", page.root);
+let board = penpotUtils.findShape(s => s.name === "home-Home-Default", page.root);
 if (!board) {
   board = penpot.createBoard();
-  board.name = "home/Home-Default";
+  board.name = "home-Home-Default";
   board.resize(390, 844);
   board.x = 0;
   board.y = 0;
@@ -66,14 +70,18 @@ return { children: board.children.map(c => ({ name: c.name, y: c.y, h: c.height 
 - 名称用 `sec-TopBar` 而不是 `sec/TopBar`：Penpot 会把 `/` 归一化成 `" / "`，导致幂等判断失效、重复执行时插出重复区块。
 - `x/y` 是页面绝对坐标，所以子区块要写成 `board.x` / `board.y + offset`。
 - `offset` 从现有子元素的最大底边算起，保证可重复执行。
-- 剩余 7 个区块用同样方式再跑两次。
+- 剩余 7 个区块分两批（4 + 3）用同样方式执行。
 
 ## 步骤 3：填内容
 
 文本：
 
 ```js
+const board = penpotUtils.findShapeById(storage.homeBoardId);
+if (!board) throw new Error("board not found: " + storage.homeBoardId);
 const sec = penpotUtils.findShape(s => s.name === "sec-Search", board);
+if (!sec) throw new Error("sec-Search not found");
+
 const t = penpot.createText("搜索目的地");
 t.fontSize = 14;
 t.resize(sec.width - 32, 10);   // 必须先给宽度：默认宽度只有 1px
@@ -94,13 +102,24 @@ import_image(filePath="C:/assets/hero.png", x=..., y=..., width=358)
 
 ```js
 const board = penpotUtils.findShapeById(storage.homeBoardId);
-const outside = penpotUtils.analyzeDescendants(board, (root, s) =>
-  penpotUtils.isContainedIn(s, root) ? null : { name: s.name, x: s.x, y: s.y, w: s.width, h: s.height }
-);
+if (!board) throw new Error("board not found: " + storage.homeBoardId);
+const outside = [];
+(function walk(parent) {
+  for (const child of parent.children || []) {
+    const px = child.parentX, py = child.parentY;
+    if (px < 0 || py < 0 ||
+        px + child.width > parent.width ||
+        py + child.height > parent.height) {
+      outside.push({ id: child.id, name: child.name, parent: parent.name, px, py });
+    }
+    if (child.children?.length) walk(child);
+  }
+})(board);
 return {
   board: { w: board.width, h: board.height },
   sections: board.children.map(c => ({ name: c.name, y: c.y, h: c.height })),
-  outside
+  outside: outside.slice(0, 10),
+  outsideCount: outside.length
 };
 ```
 

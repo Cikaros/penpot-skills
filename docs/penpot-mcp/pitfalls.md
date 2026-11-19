@@ -4,6 +4,7 @@
 >
 > 实测环境：Penpot `2.18.7`，MCP 只暴露 `execute_code`（2026-11-19）。
 > 标注 `[实测]` 的条目在该环境复现过；标注 `[推断]` 的条目来自源码或官方文档，尚未在本环境验证。
+> 本文的 `[实测]` 默认指“2.18.7 合成验收页”；真实项目文件验证需另标 `[实测-真实文件]`。
 
 ## 0. 先探测，再写代码
 
@@ -14,7 +15,10 @@ const t = (v) => typeof v;
 const probe = (fn) => { try { return fn(); } catch (e) { return "ERR " + e; } };
 return {
   version: penpot.version,                       // 例："2.18.7"
+  rootType: t(penpot.root),                      // 当前页根；currentPage.root 等价
+  currentPage: t(penpot.currentPage),
   naturalChildOrdering: penpot.flags && penpot.flags.naturalChildOrdering,
+  layoutWait: t(penpot.waitForLayoutUpdate),
   globals: {
     location: t(location), window: t(window), document: t(document),
     atob: t(atob), TextDecoder: t(TextDecoder), Blob: t(Blob), fetch: t(fetch)
@@ -22,7 +26,7 @@ return {
   utils: Object.getOwnPropertyNames(penpotUtils)
     .filter(n => !["length", "name", "prototype"].includes(n)),
   user: probe(() => penpot.currentUser ? penpot.currentUser.id : null),
-  pages: probe(() => penpotUtils.getPages())
+  pages: probe(() => penpotUtils.getPages().map(p => ({ id: p.id, name: p.name })))
 };
 ```
 
@@ -31,6 +35,7 @@ return {
 - `user` 以 `ERR` 开头且含 `user:read` → 插件没有用户信息权限，**不是未登录**。
 - `utils` 里没有 `atob` 但有 `base64ToByteArray` → 用后者解码。
 - `naturalChildOrdering === true` → 子元素数组顺序 = 视觉顺序。
+- `layoutWait === "undefined"` → 当前版本没有官方等待函数；先插测试块并复读坐标，再决定是否批量操作。
 - `globals.location === "undefined"` → 不要写 `location.origin`。
 
 ## 1. 版本差异速查
@@ -44,8 +49,10 @@ return {
 | `fillImage.data()` | 返回 **Promise** `[实测]` | 当同步数组用 | 一律 `await`（对同步返回值也无害） |
 | `shape.export()` | 返回 **Promise\<Uint8Array\>** `[实测]` | 当同步字节用 | 一律 `await` |
 | `generateStyle` 选项 | 只认 `includeChildren`；`withChildren` 被静默忽略 `[实测]` | 示例写 `withChildren` | 用 `includeChildren`，并用输出长度验证 |
+| `generateStyle` token | 即使 `fillColorRefId` 指向库色，仍输出裸 `#3366ffFF`，不输出变量 `[实测]` | 以为会自动 `var(--token)` | 生成后按 token 表替换，或代码侧手工变量化 |
 | 图层名中的 `/` | 写入即归一化为 `" / "` `[实测]` | 用 `home/Home-Default` 并精确匹配 | 改用 `-`/`__`，或比较前归一化 |
 | `findShapes(pred)` | **跨所有页面**搜索 `[实测]` | "默认只搜当前页" | 显式传 `root` 限定范围 |
+| 页根入口 | `penpot.root` 与 `penpot.currentPage.root` 都指向当前页 `[源码]` | 把 `penpot.root` 当成跨页根 | 需要明确页码时用 `currentPage.root`；跨页先 `getPageById` |
 | `analyzeDescendants` | `(shape, fn(root,node), maxDepth?)` → `[{shape,result}]`，不含 root `[实测]` | 当作返回数组/布尔过滤 | 按三元组签名调用，回调返回非空才收集 |
 | `penpot.currentUser` | 无 `user:read` 权限时**抛异常** `[实测]` | 当作 null 判断登录 | try/catch，区分"无权限"与"未登录" |
 | 执行上下文全局 | `location`/`window`/`document` 均 undefined；`fetch` 存在 `[实测]` | 用 `location.origin` 做预检 | 只用 `penpot.*`，不要碰 DOM/URL |
@@ -75,6 +82,8 @@ const y = shape.y;   // 未等待时可能仍是 0
 ```
 
 `[实测]` 连续插入 3 个矩形后立即读坐标，三者 `y` 都是 0；等待后变为 0/50/100。
+
+> 2026-11-19 合成页复测时出现过一次 `waitForLayoutUpdate timeout`，随后隔离用例与成对复跑均通过。等待调用应加超时上限并在 `finally` 中清理；超时后先检查坐标，不要假设布局一定已结算。
 
 ### 2.3 手改坐标对 flex 子元素无效
 
@@ -109,6 +118,8 @@ cardBoard.insertChild(cardBoard.children.length, card);
 ```
 
 `addFlexLayout()` 的默认 `dir` 是 `"row"`，`rowGap`/`columnGap`/padding 均为 0 `[实测]`。
+
+先建布局再 `flex.appendChild`，或在建布局后重新 append 子元素，2.18.7 合成页都能结算为 0/20/40；等待函数仍需加上限（见 2.2）。
 
 ### 2.6 `group()` 会反转子元素数组
 
@@ -198,12 +209,27 @@ await penpotUtils.exportImage(shape, "fill", false);  // 原始填充图字节
 症状：上传"成功"，但图片空白，读回字节以 `<html` 开头（常见 548 字节）。
 
 ```js
-const h = Array.from(bytes.slice(0, 4));
-const isPng  = h[0] === 0x89 && h[1] === 0x50 && h[2] === 0x4e && h[3] === 0x47;
-const isJpeg = h[0] === 0xff && h[1] === 0xd8;
-const isGif  = String.fromCharCode(...h.slice(0, 3)) === "GIF";
-const isWebp = String.fromCharCode(...h) === "RIFF";
-if (!(isPng || isJpeg || isGif || isWebp)) {
+// SNIPPET:image-kind:start
+/**
+ * Image signature guard: PNG / JPEG / GIF87a / GIF89a / WEBP.
+ * Requires at least 12 bytes and rejects other RIFF containers (WAV/AVI).
+ */
+function imageKind(bytes) {
+  if (!bytes || typeof bytes.length !== "number" || bytes.length < 12) return null;
+
+  const s = (from, to) => String.fromCharCode(...Array.from(bytes.slice(from, to)));
+
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+      bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) {
+    return "png";
+  }
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
+  if (s(0, 6) === "GIF87a" || s(0, 6) === "GIF89a") return "gif";
+  if (s(0, 4) === "RIFF" && s(8, 12) === "WEBP") return "webp";
+  return null;
+}
+// SNIPPET:image-kind:end
+if (!imageKind(bytes)) {
   throw new Error("not an image: " + String.fromCharCode(...bytes.slice(0, 8)));
 }
 ```
@@ -263,25 +289,12 @@ const css = penpot.generateStyle([board], { type: "css", includeChildren: true }
 ```
 
 - 只认 `includeChildren`；`withChildren` 不生效也不报错 `[实测]`（同一画板：true 1230 字符，false 158 字符，`withChildren:false` 仍是 1230）。
+- `withPrelude` 可用：同一 shape 下 false/true 为 147/789 字符；true 的 prelude 里出现重复 `html, body` 块，套用前先去重 `[实测]`。
 - 输出里的颜色是 8 位十六进制（如 `#ff0000FF`），转代码时按目标平台转换。
 - `generateStyle` **只接受 `type:"css"`**，`tailwind`/`scss`/`json`/`html` 均报 `Value not valid` `[实测]`。
 - `generateMarkup` 接受 `type:"html"` 与 `type:"svg"`；`json` 报 `Value not valid` `[实测]`。
 - `generateStyle` 的 CSS 类名与 `generateMarkup` 的 HTML 类名**共用同一基类**（如 `e2ehome-<hash>`、`bgtop-<hash>`），可直接配对；HTML 额外带 `frame`/`shape`/`rect`/`text` 语义类 `[实测]`（39 个 HTML 类中 29 个与 CSS 重合）。
 - 从 CSS 提取类名时正则要过滤纯数字：`.2em` 会被误匹配成类名 `2`。
-
-### 6.5 批量查色与换色
-
-```js
-const used = penpot.shapesColors([board]);
-// → [{ color:"#ffffff", opacity:1, shapesInfo:[{property:"fill", index:0, shapeId}] }]
-
-penpot.replaceColor([shape], { color: "#FF0000" }, { color: "#00FF00" });
-```
-
-- `[实测]` `shapesColors` 返回数组，每项带 `color`/`opacity`/`shapesInfo`，可用于审计配色。
-- `[实测]` `replaceColor` 的第二、三个参数必须是**对象**（`{color, opacity?}`），传十六进制字符串会报 `Value not valid: {}`。
-- 替换是批量的，会同时改 fills/strokes 中匹配的颜色；执行前先用 `shapesColors` 确认影响面。
-- `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
 ### 6.1 Token 与库颜色
 
@@ -303,6 +316,25 @@ shape.fills = [{
 
 - `fill` 的可写字段包括 `fillColor`、`fillOpacity`、`fillColorRefId`、`fillColorRefFile`、`fillImage` `[实测]`。
 - `tokenOverview()` 在无 token 时返回 `{}`，不要把它当作“库为空”的唯一依据，直接查 `penpot.library.local.colors` 更可靠 `[实测]`。
+- **`generateStyle` 不会把库颜色转成变量**：`exp-token` 的 fill 同时有 `fillColor:"#3366ff"`、`fillColorRefId`、`fillColorRefFile`，生成 CSS 仍是 `background: #3366ffFF`，`hasVar=false` `[实测]`。需要 token 化时，生成后按 `library.local.colors` 或项目 token 导出替换。
+
+### 6.2 阴影、模糊、圆角、透明度
+
+```js
+shape.shadows = [{
+  style: "drop-shadow",
+  offsetX: 0, offsetY: 4, blur: 12, spread: 0,
+  color: { color: "#000000", opacity: 0.12 }   // 必须是嵌套对象
+}];
+shape.blur = { value: 6 };                     // 也是对象，不是数字
+shape.opacity = 0.5;
+shape.borderRadius = 12;                       // 也可用四角独立属性
+```
+
+- `[实测]` 属性名是 **`shadows`**（复数）；写 `shape.shadow` 会报 `object is not extensible`。
+- 阴影颜色必须写成 `{ color, opacity }`；写成 `color:"#000" + opacity` 时 opacity 被忽略，统一存 0.2 `[实测]`。
+- `shape.blur` 需要 `{ value }`；直接赋数字会被忽略，存回默认 4 `[实测]`。
+- 圆角可统一 `borderRadius`，也可用 `borderRadiusTopLeft/TopRight/BottomRight/BottomLeft` `[实测]`。
 
 ### 6.3 组件实例
 
@@ -340,23 +372,19 @@ text.lineHeight = typo.lineHeight;
 - `[实测]` `penpotUtils.findTokensByName("font-body")` 返回 `[]`；排版 token 不在 `findTokensByName` 的索引里，直接查 `library.local.typographies`。
 - grid 布局对象的 `columns`/`rows` 是只读 getter：直接赋值报 `only a getter`，`columns.push(...)` 静默无效（读回仍是 `[]`）`[实测]`。本版本用 flex 或绝对定位，不要用插件 API 配网格。
 
-### 6.2 阴影、模糊、圆角、透明度
+### 6.5 批量查色与换色
 
 ```js
-shape.shadows = [{
-  style: "drop-shadow",
-  offsetX: 0, offsetY: 4, blur: 12, spread: 0,
-  color: { color: "#000000", opacity: 0.12 }   // 必须是嵌套对象
-}];
-shape.blur = { value: 6 };                     // 也是对象，不是数字
-shape.opacity = 0.5;
-shape.borderRadius = 12;                       // 也可用四角独立属性
+const used = penpot.shapesColors([board]);
+// → [{ color:"#ffffff", opacity:1, shapesInfo:[{property:"fill", index:0, shapeId}] }]
+
+penpot.replaceColor([shape], { color: "#FF0000" }, { color: "#00FF00" });
 ```
 
-- `[实测]` 属性名是 **`shadows`**（复数）；写 `shape.shadow` 会报 `object is not extensible`。
-- 阴影颜色必须写成 `{ color, opacity }`；写成 `color:"#000" + opacity` 时 opacity 被忽略，统一存 0.2 `[实测]`。
-- `shape.blur` 需要 `{ value }`；直接赋数字会被忽略，存回默认 4 `[实测]`。
-- 圆角可统一 `borderRadius`，也可用 `borderRadiusTopLeft/TopRight/BottomRight/BottomLeft` `[实测]`。
+- `[实测]` `shapesColors` 返回数组，每项带 `color`/`opacity`/`shapesInfo`，可用于审计配色。
+- `[实测]` `replaceColor` 的第二、三个参数必须是**对象**（`{color, opacity?}`），传十六进制字符串会报 `Value not valid: {}`。
+- 替换是批量的，会同时改 fills/strokes 中匹配的颜色；执行前先用 `shapesColors` 确认影响面。
+- `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
 ## 7. 执行环境与工具面
 
@@ -388,7 +416,7 @@ shape.borderRadius = 12;                       // 也可用四角独立属性
 
 ## 9. 验收清单
 
-- [ ] 子元素都在父容器内（含 `clipContent` 的 board）
+- [ ] 子元素都在直接父容器内（含 `clipContent` 的 board；逐层检查，不只比顶层）
 - [ ] 没有 0 宽/0 高、没有负尺寸
 - [ ] 文本 `growType` 为 auto，且在实际布局后复读过尺寸
 - [ ] 遮挡顺序符合预期

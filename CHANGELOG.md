@@ -6,6 +6,42 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.6.0
+
+工程化第一阶段：先修会误导执行的示例，再建立最小质量门禁、单一源与可复现验证。
+
+### Added
+
+- `docs/engineering/COMPASS.md`：工程化设计罗盘，定义单一源、证据分级、质量门禁与 P0–P3 路线图。
+- `shared/penpot-guards.mjs` + `test/guards.test.mjs`：图片完整签名、命名归一化、嵌套越界、空值守卫的纯函数与单测。
+- `shared/snippets/image-kind.mjs` + `scripts/sync-snippets.mjs`：canonical 图片签名片段，自动写入 8 个 Markdown 代码块；`penpot-guards` 直接复用同一实现。
+- `scripts/build-manifest.mjs` + `skills/penpot-mcp/manifest.json`：技能文件清单与 SHA-256；`doctor.ps1` 校验安装完整性。
+- `scripts/check-docs.mjs` + `.github/workflows/check.yml`：链接、围栏、标题编号、禁用模式、片段一致性、manifest、版本一致性的零依赖门禁。
+- `scripts/install-skill.ps1` / `doctor.ps1`：带备份、版本戳与安装后检查的技能安装链路。
+- `package.json`：`npm run check`、`npm test`、`npm run verify`、`npm run sync`、`npm run manifest`。
+- `CONTRIBUTING.md`、`docs/penpot-mcp/glossary.md`、`docs/penpot-mcp/known-unknowns.md`：贡献流程、术语表与已知未知清单。
+- `verification/`：运行时/纯函数探针、验证日志、兼容性矩阵与升级回归清单；V-00/V-02/V-04/V-05 已在 2.18.7 合成页执行。
+- 实测补记：`waitForLayoutUpdate` 出现过一次超时，随后成对复跑通过；`uploadMediaData` + `fillImage.data()` 用 70 字节 1×1 PNG 验证成功。
+- 完整合成页复跑：案例 01（11 区块/390×844/越界 0）、案例 02（扫描/替换/保留 opacity）、案例 03（修复后越界 0）、案例 04（CSS 3040/165、HTML 3643）均已记录。
+- 案例 04 token 边界实测：即使 `fillColorRefId` 指向库色 `color-brand-primary`，`generateStyle` 仍输出 `#3366ffFF`、无变量；token 化需要生成后处理。补测 `withPrelude`（147/789 字符，prelude 重复）与 `generateMarkup` SVG（589 字符）。
+- 修复案例 01 文本片段漏定义 `board` 的问题，并记录临时页生命周期探针 V-06。
+
+### Fixed
+
+- 案例 01：`home/Home-Default` 改为 `home-Home-Default`；`openPage` 补 `await`；返回值去掉 page/shape 代理。
+- 案例 02：显式使用 `penpot.currentPage.root`（官方同时提供等价的 `penpot.root`）；区分 `import_image` 新建图片与 `uploadMediaData` 替换 fill；批量扫描加 30 张上限和逐项错误隔离。
+- 案例 03：`sample` 改为纯数据；负坐标纳入可修复范围；去掉用闭包承载修复动作的写法。
+- 魔数守卫改为完整 PNG/JPEG/GIF/WEBP 签名，拒绝 WAV/AVI 等 RIFF 容器；改为单一 canonical 片段生成。
+- 修正检查器对 `penpot.root` 与 `getPages()` 的误禁：官方 API 同时提供 `penpot.root`/`currentPage.root`，`getPages()` 返回纯对象。
+- `pitfalls.md` 第 6 节按 6.1–6.5 重排；`api-pitfalls.md` 的 4.4 改为 4.1。
+- `SKILL.md` 预检返回纯数据，补 `waitForLayoutUpdate` 探测与“仅 execute_code 时不能声称目视验收”的说明。
+
+### Changed
+
+- README 增加前置条件、质量门禁、安装脚本、验证入口与工程化入口；`.gitignore` 补 Node/Python 工具目录。
+- 统一实例命名与 Token 映射说明：主组件 `cmp-...`、实例图层 `btn-...`；规范 ID 落 Penpot 用 `-`。
+- `usage.md` 修正“本仓库没有 package.json”的过时说法；`check-docs` 现覆盖 `verification/` 与 `CONTRIBUTING.md`。
+
 ## v0.5.11
 
 导出缩放像素验证。

@@ -1,0 +1,17 @@
+{
+  "name": "penpot-skills",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "description": "Penpot MCP usage notes, design specs and installable skills.",
+  "scripts": {
+    "check": "node scripts/check-docs.mjs && node scripts/sync-snippets.mjs --check && node scripts/build-manifest.mjs --check",
+    "test": "node --test",
+    "verify": "npm run check && npm test",
+    "sync": "node scripts/sync-snippets.mjs --write",
+    "manifest": "node scripts/build-manifest.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

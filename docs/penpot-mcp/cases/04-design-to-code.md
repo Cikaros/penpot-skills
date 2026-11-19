@@ -14,6 +14,8 @@ return penpot.selection.map(s => ({ id: s.id, name: s.name, type: s.type, w: s.w
 
 选区随时会变，先存 id，后续按 id 重新取。
 
+> `[实测-合成页]` 2.18.7 下 `penpot.selection = [shape]` 可临时设定选区，完成后应恢复为 `[]`；真实操作仍应让用户在 UI 中选中目标。
+
 ## 步骤 2：生成样式
 
 ```js
@@ -50,7 +52,9 @@ CSS 类名与 HTML 类名共用同一基类（如 `e2ehome-<hash>`），可直�
 | `font-size: 24px` | `var(--font-h2-size)` |
 | `border-radius: 8px` | `var(--radius-8)` |
 
-映射表应来自项目的 token 导出，不要凭色值猜语义。
+映射表应来自项目的 token 导出，不要凭色值猜语义。下表的色值—变量对应只是**方向示意**，不是可以直接复制的事实；实际项目必须用 token 导出结果替换。
+
+> **2.18.7 实测限制**：即使 shape 的 fill 带有 `fillColorRefId` 指向本地库颜色，`generateStyle` 仍输出裸值（例如 `#3366ffFF`），不会自动生成 `var(--color-brand-primary)`。token 映射必须在生成后按 token 表做后处理，不能假设 `generateStyle` 自动完成。
 
 ## 步骤 4：产出结构
 
@@ -79,11 +83,12 @@ CSS 类名与 HTML 类名共用同一基类（如 `e2ehome-<hash>`），可直�
 | 现象 | 原因 | 处理 |
 |---|---|---|
 | 只导出了外层，子元素缺失 | 选项名用错（见步骤 2） | 查 API 后重导 |
-| 颜色全是裸值 | 设计里用的是本地色而非 token | 先在 Penpot 里把颜色挂到库 |
+| 颜色全是裸值 | `generateStyle` 不读取 `fillColorRefId`，即使挂了库也输出裸色 | 生成后按 token 表替换，或在代码侧手工变量化 |
 | 结构层级过深 | 用 group 层层包裹 | 扁平化，group 不作为 DOM 层级 |
 | 字体对不上 | 设计用了未加载字体 | 先在文件里补齐字体资源 |
 
 ## 现场需核对
 
-- `generateStyle` 的选项名与返回格式（字符串 / 对象）。
-- `generateMarkup` 是否在当前版本可用；不可用就只导样式，结构由 AI 按 shape 树生成。
+- `generateStyle` 的选项名与返回格式（字符串 / 对象）；2.18.7 还支持 `withPrelude`，实测 false/true 为 147/789 字符，prelude 里出现重复的 `html, body` 块，使用前要去重。
+- `generateMarkup` 是否在当前版本可用；不可用就只导样式，结构由 AI 按 shape 树生成。2.18.7 的 `type:"html"` 与 `type:"svg"` 均可用（svg 输出以 `<svg` 开头）。
+- 生成结果里的裸色值/裸间距是否能映射到项目 token；2.18.7 实测即使 `fillColorRefId` 存在也不输出变量，因此这一项必须做后处理验收。

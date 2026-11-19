@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "snippets": [
+    {
+      "id": "image-kind",
+      "file": "image-kind.mjs",
+      "targets": [
+        "docs/penpot-mcp/cases/02-image-repair.md",
+        "docs/penpot-mcp/auth.md",
+        "docs/penpot-mcp/pitfalls.md",
+        "skills/penpot-mcp/references/api-pitfalls.md",
+        "skills/penpot-mcp/references/auth-and-transport.md",
+        "skills/penpot-mcp/references/recipes.md"
+      ]
+    }
+  ]
+}
