@@ -26,7 +26,11 @@ try {
     destination: target,
   });
 
-  flow = page.createFlow("probe-prototype-flow", start);
+  // 2.18.7: the first interaction auto-creates a default flow.
+  const autoFlows = page.flows.filter((item) => item.startingBoard?.id === start.id);
+  if (autoFlows.length !== 1) throw new Error(`expected one auto flow, got ${autoFlows.length}`);
+  flow = autoFlows[0];
+  flow.name = "probe-prototype-flow";
 
   const readback = {
     start: { id: start.id, name: start.name },
@@ -48,6 +52,7 @@ try {
   if (readback.interactions[0].destination !== target.id) throw new Error("wrong destination");
   if (readback.flows.length !== 1) throw new Error("expected one flow");
   if (readback.flows[0].board !== start.id) throw new Error("wrong flow start");
+  if (readback.flows[0].name !== "probe-prototype-flow") throw new Error("flow rename failed");
 
   return { ok: true, readback };
 } finally {

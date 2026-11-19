@@ -386,6 +386,25 @@ penpot.replaceColor([shape], { color: "#FF0000" }, { color: "#00FF00" });
 - 替换是批量的，会同时改 fills/strokes 中匹配的颜色；执行前先用 `shapesColors` 确认影响面。
 - `generateCss` 内部可能切换当前页，调用前记录 `penpot.currentPage.id`，必要时切回 `[推断]`。
 
+### 6.6 交互会自动创建 flow
+
+```js
+const page = penpot.currentPage;
+const nav = start.addInteraction("click", {
+  type: "navigate-to",
+  destination: target,
+});
+
+// 首次 addInteraction 已自动创建 Flow 1；直接重命名
+const flow = page.flows.find(f => f.startingBoard.id === start.id);
+flow.name = "checkout";
+```
+
+- `[实测]` 2.18.7 首次给 board 添加 interaction 时，会自动创建一个名为 `Flow 1` 的 flow；此时 `page.flows` 从 0 变为 1。
+- `[实测]` 再调用 `page.createFlow("checkout", start)` 会**追加**第二条 flow，不是替换默认 flow；单路径不要两者都调。
+- `[实测]` `flow.name` 可写，重命名后 `page.flows` 读到新名字。
+- 多起点/多流程才用 `createFlow` 追加；清理时先 `removeFlow`，再删 board。
+
 ## 7. 执行环境与工具面
 
 - `[实测]` 执行上下文没有 `location`/`window`/`document`；写 `location.origin` 会直接 `Cannot read properties of undefined`。

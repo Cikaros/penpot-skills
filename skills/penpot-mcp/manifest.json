@@ -6,8 +6,8 @@
   "files": [
     {
       "path": "references/api-pitfalls.md",
-      "bytes": 11047,
-      "sha256": "ab1c3457c305f4cddf6660b3d448b0ee8f9a79e3a79f93031dc3e746a284e367"
+      "bytes": 11560,
+      "sha256": "d0820cc2ee9db1070b7c312963a3130d105c641caaec730c09dfbca5ed7d099e"
     },
     {
       "path": "references/auth-and-transport.md",

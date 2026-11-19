@@ -215,6 +215,18 @@ text.lineHeight = typo.lineHeight;
 - `findTokensByName` 不索引排版 token，查 `library.local.typographies`。
 - `createVariantFromComponents` 对 shape 代理/ID 数组都报 `Value not valid`（实测），暂时用独立组件模拟变体。
 
+### 6.4 交互会自动创建 flow（2.18.7 实测）
+
+```js
+const nav = start.addInteraction("click", { type: "navigate-to", destination: target });
+const flow = penpot.currentPage.flows.find(f => f.startingBoard.id === start.id);
+flow.name = "checkout";
+```
+
+- 首次 `addInteraction` 自动创建 `Flow 1`；`page.createFlow` 会追加第二条，不是替换。
+- `flow.name` 可写；单路径直接重命名自动 flow。
+- 多起点/多流程才用 `createFlow`；清理先 `removeFlow`，再删 board。
+
 ## 7. 执行环境
 
 - 无 `location`/`window`/`document`（实测）；`location.origin` 会直接抛错。

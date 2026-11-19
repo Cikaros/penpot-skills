@@ -2,7 +2,7 @@
 
 **目标**：用 Penpot 原生的 board interaction / flow 把两个屏幕连成一条可点击路径，并能读回验证。
 
-> 适用：`execute_code` 可用的 2.18.7 环境。API 签名来自 `penpot_api_info`（`[源码]`）；本机 Penpot 标签页当前被浏览器冻结，**尚未执行**，因此完整结果标 `[待验证]`。执行前先在可丢弃页面确认。
+> 适用：`execute_code` 可用的 2.18.7 环境。API 签名来自 `penpot_api_info`（`[源码]`）；V-08 已在 `test-design` / `99-MCP-Test` 合成页通过 API 结构验收 `[实测-合成页]`。**view mode 的实际点击尚未验证**；执行前仍用可丢弃页面。
 
 ## 步骤 1：准备两个 board
 
@@ -51,17 +51,20 @@ API 约定（2.18.7）：
 - `after-delay` 的 `delay` 单位是毫秒；
 - `navigate-to` 的目标是 board，不是任意 shape。
 
-## 步骤 3：建立 flow
+## 步骤 3：命名自动 flow
 
 ```js
-const flow = page.createFlow("probe-checkout", start);
-flow.name = "probe-checkout";
+const autoFlow = page.flows.find(f => f.startingBoard.id === start.id);
+if (!autoFlow) throw new Error("addInteraction did not create a flow");
+autoFlow.name = "probe-checkout";
 return {
-  flow: flow.name,
-  startingBoard: flow.startingBoard.id,
+  flow: autoFlow.name,
+  startingBoard: autoFlow.startingBoard.id,
   flows: page.flows.map(f => ({ name: f.name, board: f.startingBoard.id })),
 };
 ```
+
+2.18.7 的实测行为：**首次 `addInteraction` 会自动创建 `Flow 1`**；再调用 `page.createFlow` 会追加第二条 flow，而不是替换默认 flow。单路径场景应直接重命名自动 flow。需要多个起点/多条流程时，再用 `createFlow` 追加并分别命名。
 
 一个 flow 只定义一个起点 board；同一页可以有多条 flow。不要把 flow 名和 board 名混用。
 
@@ -114,17 +117,17 @@ try {
 |---|---|---|
 | `addInteraction` 报 destination 无效 | 传了 shape 或 id 字符串 | 传 board 对象 |
 | 交互存在但 view mode 点不动 | 没有 flow / 起点不对 | 建 flow，确认 startingBoard |
-| 多条 flow 混在一起 | 一个起点建了多条 | 每条路径独立命名、独立起点 |
+| 多条 flow 混在一起 | 首次 `addInteraction` 自动建了 `Flow 1`，又手动 `createFlow` | 单路径重命名自动 flow；不要重复创建 |
 | `after-delay` 不触发 | 没传 delay 或单位错 | 用毫秒，例如 `500` |
 | 删除 board 后残留 flow | 先删 board | 先 `removeFlow`，再删 board |
 | 把合成页通过写成真实文件通过 | 证据边界缺失 | 标 `[实测-合成页]` 或 `[待验证]` |
 
 ## 现场需核对
 
-- `page.createFlow` / `flow.name` 是否可写；
-- `addInteraction` 的 action 对象是否要求其他必填字段；
+- `flow.name` 已确认可写 `[实测-合成页]`；`page.createFlow` 会追加 flow；
+- `addInteraction` 的 action 对象是否要求其他必填字段（`navigate-to` 已验证）；
 - `open-overlay` 的 `relativeTo` / `position` 在当前版本的实际行为；
-- view mode 的点击路径与返回行为。
+- view mode 的点击路径与返回行为（**尚未验证**）。
 
 ## 相关
 

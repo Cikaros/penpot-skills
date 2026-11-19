@@ -10,9 +10,9 @@
 | V-05 | `05-image-upload.js` | `execute_code` | 是（自清理） | 1×1 PNG 上传成功，`media` 1×1，读回字节仍是 PNG |
 | V-06 | `06-page-lifecycle.js` | `execute_code` | 是（自清理） | 临时页可创建、切换、恢复、删除 |
 | V-07 | `07-css-tokenize.mjs` | Node | 否 | 8 位 alpha 裸色归一化并替换为 token；剩余裸 px 进入审计 |
-| V-08 | `08-prototype-flow.js` | `execute_code` | 是（自清理） | board interaction + flow 创建、读回、清理；待 Penpot 标签页唤醒后执行 |
+| V-08 | `08-prototype-flow.js` | `execute_code` | 是（自清理） | 首次 interaction 自动建 `Flow 1`；重命名后读回，清理无残留 |
 | V-09 | `09-site-links.mjs` | Node | 否 | `site/` 所有本地 href/src 可解析 |
-| V-10 | `10-real-file-baseline.js` | `execute_code` | 否 | 真实项目文件的文件/页面/board/选区只读基线；待真实文件 |
+| V-10 | `10-real-file-baseline.js` | `execute_code` | 否 | 文件/页面/board/选区只读基线；已在 `test-design` 运行，仍待真实项目文件 |
 
 ## 期望输出示例
 
@@ -52,6 +52,12 @@ V-07：
 {"ok":true,"replacements":[{"from":"#3366ffFF","to":"var(--color-brand-primary)"}],"audit":{"rawColors":[],"rawPx":["16px"]}}
 ```
 
+V-08：
+
+```json
+{"ok":true,"readback":{"interactions":[{"trigger":"click","action":"navigate-to"}],"flows":[{"name":"probe-prototype-flow"}]}}
+```
+
 V-09：
 
 ```json
@@ -60,4 +66,4 @@ V-09：
 
 实际输出可以与示例字段顺序不同，但关键字段必须一致；V-02 的 `wait` 必须是 `resolved`，否则先记录为波动，不要直接判定布局逻辑失败。案例 01–05 的完整脚本见 `docs/penpot-mcp/cases/`，执行结果记录在 `verification/log/`。
 
-> V-08 / V-10 目前只有可执行探针，**没有执行记录**：2026-11-19 本轮 Penpot 插件标签页被浏览器挂起（无心跳），不得标 `[实测]`。V-07 / V-09 是本地 Node 探针，不是 Penpot 行为结论。
+> V-08 已在 `test-design` / `99-MCP-Test` 通过 API 结构验收 `[实测-合成页]`；view mode 的实际点击仍未验证。V-10 已在同一合成页运行，只能证明只读探针可用，**不能作为 `[实测-真实文件]` 证据**。V-07 / V-09 是本地 Node 探针，不是 Penpot 行为结论。
