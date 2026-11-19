@@ -71,6 +71,8 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 
 **想做设计规范**：读 `docs/design/principles.md` → `prototyping.md` → `usability-test.md` → `design-system.md` → `ai-collaboration.md` → `states.md` → `accessibility.md` → `tokens.md` → `visual-spec.md` → `components.md`。
 
+**想做可点击多屏原型**：先读技能内的 `skills/penpot-mcp/references/screen-kit.md`，再用 `references/recipes.md` 的代码骨架落地。
+
 ## 质量门禁
 
 ```bash
@@ -116,7 +118,7 @@ npm run verify    # check + test（含 site:check）
 
 逐条证据与反例见 `docs/penpot-mcp/pitfalls.md`；可复现骨架见 `skills/penpot-mcp/references/recipes.md`。
 
-> 2026-11-19 刷新 MCP 后，V-00/V-02/V-04/V-05 与案例 01/02/03 已在 Penpot 2.18.7 的临时合成页通过；案例 04 的生成链路通过，但实测不自动 token 化，需要生成后处理。真实项目文件 `小纸条` 已完成 5 屏设计首版并通过 V-10 只读基线；view mode 实际点击仍未验证。记录见 `verification/log/2026-11-19.md`。
+> 2026-11-19 刷新 MCP 后，V-00/V-02/V-04/V-05 与案例 01/02/03 已在 Penpot 2.18.7 的临时合成页通过；案例 04 的生成链路通过，但实测不自动 token 化，需要生成后处理。真实项目文件 `小纸条` 已完成 11 屏设计与 45 个交互的数据层验收，并通过 V-10 只读基线；view mode 实际点击仍未验证。记录见 `verification/log/2026-11-19.md`。
 
 ## 验证与已知未知
 

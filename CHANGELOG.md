@@ -1,9 +1,16 @@
 # Changelog
 
-## Unreleased
+## v0.7.0
+
+技能迭代：把真实文件 `小纸条` 的 11 屏、45 个交互和单条主流程抽象为可复用方法；只沉淀多屏结构、坐标、贴底安全区、接线和验收，不引入项目主题、品牌色或具体布局。
 
 ### Added
 
+- `skills/penpot-mcp/references/screen-kit.md`：多屏屏幕图、入口/出口、绝对坐标、贴底栏、等分 1px、可点击暗示、交互命中层、flow 清理与验收清单。
+- `SKILL.md`：补多屏原型工作流与交付检查；强调 `board.x + localX`、贴底栏贴住 board 底边、当前 tab 不自跳、额外 flow 清理。
+- `api-pitfalls.md` / `pitfalls.md`：补子元素绝对坐标、真实文件中的额外 flow 自动创建与 `removeFlow` 行为。
+- `doctor.ps1`：安装检查覆盖新增的 `screen-kit.md`。
+- `build-site.mjs`：站点页脚版本改为从 `package.json` 读取，避免手工漂移。
 - `docs/design/prototyping.md`：原型问题/假设/保真度/证据/决策模板，形成性测试最小流程与验收。
 - `docs/design/states.md`：屏幕级 loading/empty/error/partial/offline/permission/long-text 状态矩阵与命名规则。
 - `docs/design/accessibility.md`：WCAG 2.2 AA 设计期基线、设计标注表、Penpot 可查与必须到原型/代码验证的分界。
@@ -26,7 +33,7 @@
 ### Known gaps
 
 - 案例 05 的 API 结构已通过 `[实测-合成页]`；view mode 的实际点击跳转未验证。
-- 真实项目文件未访问；V-10 只在 `test-design` 合成文件运行。
+- 真实文件 `小纸条` 已完成 11 屏设计与 45 个交互的数据层验收，并通过 V-10 `[实测-真实文件]`；真实点击仍待验证。
 - 内置浏览器未恢复；改用系统 Edge headless 完成首页/Token 页视觉冒烟，完整点击 E2E 仍未完成。
 
 遵循语义化版本：`vMAJOR.MINOR.PATCH`。

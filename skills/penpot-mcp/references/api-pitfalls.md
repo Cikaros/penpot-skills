@@ -225,7 +225,17 @@ flow.name = "checkout";
 
 - 首次 `addInteraction` 自动创建 `Flow 1`；`page.createFlow` 会追加第二条，不是替换。
 - `flow.name` 可写；单路径直接重命名自动 flow。
-- 多起点/多流程才用 `createFlow`；清理先 `removeFlow`，再删 board。
+- 给还不在现有 flow 可达子图中的 board 首次加 interaction，会为它新建 flow；接线后删除多余 flow。
+- `removeFlow` 只删 flow，不删 shape 上的 interaction；清理后复读交互数。
+- 多起点/多流程才用 `createFlow`；清理先 `removeFlow`，再删 board。单路径只保留一条主流程。
+
+### 6.5 多屏坐标与贴底区域
+
+- shape 的 `x/y` 是**页面绝对坐标**；board 在 `x=1200` 时，局部 `16` 要写成 `1216`，或用 `penpotUtils.setParentXY(shape, 16, localY)`。
+- 不要混用“绝对坐标”和“局部坐标后再统一平移”；同一次平移重复执行会把元素推出屏幕。
+- 贴底栏从底部反推：`bar.y + bar.height === board.y + board.height`；内容结束位置不能决定底栏高度。
+- 等分导航用 `unit = board.width / n`、`x = i * unit`；文本宽度不能超过 item，否则会多出 1px 被裁切。
+- 可点击外观必须有行为；只做一个详情样例时，其余同类卡片应去掉箭头/按钮态，避免“点工作却看到生活详情”。
 
 ## 7. 执行环境
 

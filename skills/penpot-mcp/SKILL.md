@@ -1,6 +1,6 @@
 ---
 name: penpot-mcp
-description: 通过 Penpot MCP server 与 Penpot 插件操作设计文件（execute_code，以及部署允许时的 high_level_overview、penpot_api_info、export_shape、import_image），用于检查或修改 Penpot 页面、搭建与修复布局、导出图形做视觉验收、导入图片，以及排查插件未连接、401/匿名会话、上传后图片空白等问题。Use when working with Penpot through MCP, editing Penpot designs programmatically, or debugging Penpot MCP plugin connection and authentication failures.
+description: 通过 Penpot MCP server 与 Penpot 插件操作设计文件（execute_code，以及部署允许时的 high_level_overview、penpot_api_info、export_shape、import_image），用于检查或修改 Penpot 页面、搭建与修复布局、搭建多屏原型与导航接线、导出图形做视觉验收、导入图片，以及排查插件未连接、401/匿名会话、上传后图片空白等问题。Use when working with Penpot through MCP, editing Penpot designs programmatically, building multi-screen prototypes, or debugging Penpot MCP plugin connection and authentication failures.
 ---
 
 # Penpot MCP 操作规范
@@ -109,6 +109,19 @@ return { outside: bad.slice(0, 10), count: bad.length,
 
 **第 5 步 汇报**：只报改了哪些对象（id/name）、关键数值、验收证据、未完成项。不要复述代码。
 
+### 3.1 多屏与原型接线
+
+多屏/可点击原型先看 [`references/screen-kit.md`](references/screen-kit.md)；它只约束方法，不限定主题、风格或布局。
+
+- **先定屏幕图**：一屏一条记录，写清入口、出口、主路径/次级页/状态页；只保留一条主流程。
+- **次级页必须可返回**；当前 tab 不接“跳到自己”，保留 no-op。
+- **坐标基准只能有一个**：子元素 `x/y` 是页面绝对坐标，用 `board.x + localX` 或 `setParentXY(shape, localX, localY)`；不要混用后再平移一次。
+- **贴底区域从底部反推**：`bar.y + bar.height === board.y + board.height`；不要把底栏放在内容结束位置，留下无法解释的悬空。
+- **等分项用精确除法**：`unit = board.width / n`，`x = i * unit`；文本宽度不能超过 item，否则会出现 1px 裁切。
+- **可点击暗示必须兑现**：有箭头/按钮态的卡片要么接行为，要么降级为展示；不要把多张带具体标题的卡都接到同一个标题的详情页。
+- **交互挂在 shape 上**，不是挂在 board 上；命中层用极低透明度矩形覆盖，接线函数先查 `shape.interactions.length` 保证可重入。
+- **flow 要复读**：不可达 board 首次加 interaction 可能自动新建 flow；接线完成后删除多余 flow，保留预期的主流程，并复读交互数确认没有误删。
+
 ## 4. 失败速查
 
 | 症状 | 真实原因 | 处理 |
@@ -136,10 +149,17 @@ return { outside: bad.slice(0, 10), count: bad.length,
 - [ ] 若导出 CSS：已按 token 表替换裸色（`generateStyle` 不会自动变量化）
 - [ ] 每个改动过的画板都导出图片并目视确认
 - [ ] 图片填充非空（`fillImage` 存在、字节头正常、宽高非 0）
+- [ ] 多屏：屏幕图、入口/出口和主流程已写清；次级页有返回；当前 tab 不自跳
+- [ ] 多屏：所有 board 同尺寸、同 `y`，子元素使用统一坐标基准
+- [ ] 贴底栏底边等于 board 底边；等分项无 1px 越界
+- [ ] 可点击外观都有行为，或已明确降级为展示；示例数据跨屏一致
+- [ ] 交互数、flow 数、重复接线和自跳已读回；多余 flow 已清理
+- [ ] view mode 未实际点击时，明确写“数据层通过”，不写“流程可用”
 
 ## 参考
 
 - 版本差异与实测细节：`references/api-pitfalls.md`
 - 认证、`userToken`、远程模式排查：`references/auth-and-transport.md`
 - 设计简报、设计转代码、图片流水线：`references/design-workflow.md`
+- 多屏屏幕图、坐标、贴底栏与原型接线：`references/screen-kit.md`
 - 常用调用骨架：`references/recipes.md`

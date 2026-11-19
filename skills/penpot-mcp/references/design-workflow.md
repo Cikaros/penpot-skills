@@ -57,6 +57,8 @@ const markup = penpot.generateMarkup(penpot.selection, { type: "html" }); // 视
 
 ## 5. 迭代节奏与验收
 
+多屏原型（底部导航、次级页、状态页、可点击流程）在开始前先做屏幕清单与可达性图，具体方法与验收见 [`screen-kit.md`](screen-kit.md)。
+
 **一轮 = 一个可回滚的改动集**
 
 1. 读结构（`shapeStructure`，深度 2–3 足够）。

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const outDir = path.join(root, "site");
+const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const check = process.argv.includes("--check");
 const write = process.argv.includes("--write") || !check;
 
@@ -368,7 +369,7 @@ function pageHtml(rel, body, title) {
   <h1 class="page-title">${escapeHtml(title)}</h1>
   <p class="lede">静态文档站 · 由 <code>npm run site</code> 从 Markdown 生成</p>
   <article>${body}</article>
-  <p class="site-footer">仓库基线 v0.6.0 · 证据边界以各文档标注为准</p>
+  <p class="site-footer">仓库基线 v${pkg.version} · 证据边界以各文档标注为准</p>
 </main>
 </div>
 </body>

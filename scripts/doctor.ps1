@@ -26,6 +26,7 @@ $references = @(
   "references\api-pitfalls.md",
   "references\auth-and-transport.md",
   "references\design-workflow.md",
+  "references\screen-kit.md",
   "references\recipes.md"
 )
 foreach ($item in $references) {

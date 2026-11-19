@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "name": "penpot-mcp",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "entry": "SKILL.md",
   "files": [
     {
       "path": "references/api-pitfalls.md",
-      "bytes": 11690,
-      "sha256": "e6569ac91dd613e34124cb72a039c5f2e296596beb99a4690b67b74da95c5979"
+      "bytes": 12678,
+      "sha256": "e970ca8774123fe3d5c3887aa0879dd268a340ef0b63f60638404b14722b4164"
     },
     {
       "path": "references/auth-and-transport.md",
@@ -16,8 +16,8 @@
     },
     {
       "path": "references/design-workflow.md",
-      "bytes": 3979,
-      "sha256": "326749e7c34e13160a3b696ce07ebccfc4c1423a563696a67994d296b9868f6c"
+      "bytes": 4161,
+      "sha256": "71bca98e4c57186dec399b78b475859a2d6193d36f580a4a4130e5d4274a534d"
     },
     {
       "path": "references/recipes.md",
@@ -25,9 +25,14 @@
       "sha256": "b742e5eded47af51f4cdb8467da98de567c2efd71d7ad7721c8957b931520ed3"
     },
     {
+      "path": "references/screen-kit.md",
+      "bytes": 10990,
+      "sha256": "3570308c1f1f43f11ddf7c4ac24cf57b22d38760f62e42025ab8e6f0030e49a6"
+    },
+    {
       "path": "SKILL.md",
-      "bytes": 9875,
-      "sha256": "3551fff62dfa18879e13b300c4e61692662d221a08a725c2719676ad0f25a2c0"
+      "bytes": 11957,
+      "sha256": "03ff7e917935e6eb05316680ef9cb7444a1bb19ee8bf067163850af0fcd9546c"
     }
   ]
 }

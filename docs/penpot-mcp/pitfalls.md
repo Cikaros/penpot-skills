@@ -147,6 +147,26 @@ page.root.insertChild(0, shape);
 
 `[实测]` 不等待 `openPage` 就往目标页写入，会报 `Cannot modify a page that is not currently active`。`penpot.createPage()` 也不会自动切换当前页，需要显式 `openPage`。
 
+### 2.9 子元素坐标是页面绝对坐标
+
+```js
+const board = penpot.createBoard();
+board.x = 1200;
+board.resize(390, 844);
+
+const card = penpot.createRectangle();
+board.appendChild(card);
+card.x = board.x + 16;      // ✅ 绝对坐标 1216
+card.y = board.y + 120;
+
+// 或者使用父级相对定位；不要两种写法混用
+penpotUtils.setParentXY(card, 16, 120);
+```
+
+- `[实测-真实文件]` shape 的 `x/y` 是页面绝对坐标；board 在 `x=1200` 时把子元素写成 `x=16`，局部坐标会变成 `-1184`。
+- 如果先按局部坐标建子元素，最后统一做 `child.x += board.x`，只能执行一次；重复执行会把元素推出屏幕。
+- 推荐在创建每个子元素时就加上 `board.x/y`，或统一用 `setParentXY`；两种基准不要混用。
+
 ## 3. 文本
 
 ```js
@@ -404,7 +424,9 @@ flow.name = "checkout";
 - `[实测]` 2.18.7 首次给 board 添加 interaction 时，会自动创建一个名为 `Flow 1` 的 flow；此时 `page.flows` 从 0 变为 1。
 - `[实测]` 再调用 `page.createFlow("checkout", start)` 会**追加**第二条 flow，不是替换默认 flow；单路径不要两者都调。
 - `[实测]` `flow.name` 可写，重命名后 `page.flows` 读到新名字。
-- 多起点/多流程才用 `createFlow` 追加；清理时先 `removeFlow`，再删 board。
+- `[实测-真实文件]` 给一个还不在现有 flow 可达子图中的 board 首次加 interaction，会为它新建一条 flow；页面已有主流程时可能出现 `Flow 1` / `Flow 2`。接线完成后用 `page.removeFlow(flow)` 清理多余 flow。
+- `[实测-真实文件]` `removeFlow` 只删 flow，不删 shape 上的 interaction；清理后要复读交互数，确认没有误删。
+- 多起点/多流程才用 `createFlow` 追加；清理时先 `removeFlow`，再删 board。单路径默认只保留一条主流程。
 
 ## 7. 执行环境与工具面
 
