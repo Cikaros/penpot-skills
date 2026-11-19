@@ -53,7 +53,7 @@ return {
 | 图层名中的 `/` | 写入即归一化为 `" / "` `[实测]` | 用 `home/Home-Default` 并精确匹配 | 改用 `-`/`__`，或比较前归一化 |
 | `findShapes(pred)` | **跨所有页面**搜索 `[实测]` | "默认只搜当前页" | 显式传 `root` 限定范围 |
 | 页根入口 | `penpot.root` 与 `penpot.currentPage.root` 都指向当前页 `[源码]` | 把 `penpot.root` 当成跨页根 | 需要明确页码时用 `currentPage.root`；跨页先 `getPageById` |
-| `analyzeDescendants` | `(shape, fn(root,node), maxDepth?)` → `[{shape,result}]`，不含 root `[实测]` | 当作返回数组/布尔过滤 | 按三元组签名调用，回调返回非空才收集 |
+| `analyzeDescendants` | `(shape, fn(root,node), maxDepth?)` → `[{shape,result}]`，不含 root；返回 `false` 也会被收集 `[实测]` | 当作布尔过滤，写 `node.type === "board"` | 命中返回对象，未命中返回 `null` |
 | `penpot.currentUser` | 无 `user:read` 权限时**抛异常** `[实测]` | 当作 null 判断登录 | try/catch，区分"无权限"与"未登录" |
 | 执行上下文全局 | `location`/`window`/`document` 均 undefined；`fetch` 存在 `[实测]` | 用 `location.origin` 做预检 | 只用 `penpot.*`，不要碰 DOM/URL |
 
@@ -278,6 +278,7 @@ const issues = penpotUtils.analyzeDescendants(board, (root, node) => {
 // → [{ shape, result }]，只包含回调返回非空的节点；root 自身不在结果里
 ```
 
+- **过滤必须返回 `null`，不能返回 `false`**：`false` 也是非空值，会被当作命中结果收集。用 `node.type === "board"` 直接过滤会把所有图层都收进结果 `[实测-真实文件]`。
 - `maxDepth` 按“层”计数：`1` 只含直接子级，`2` 含子级与孙级，省略为全量 `[实测]`。
 
 - `shapeStructure(shape, depth?)` 返回 `{id,name,type,children}` 树，适合先看 2–3 层。

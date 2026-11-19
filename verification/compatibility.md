@@ -22,7 +22,7 @@
 | 案例 04 生成链路 | CSS 3040/165、`withPrelude` 147/789、HTML 3643、SVG 589；token 映射未通过，含裸色 `[实测-合成页]` | 待验证 | 案例 04 + 日志 |
 | 案例 04 token 后处理 | `tokenizeCssDetailed` 将 `#3366ffFF` 替换为 `var(--color-brand-primary)`；`unmapped=[]`，裸 `16px` 进入审计 | 待验证 | V-07 |
 | 案例 05 interaction/flow | 首次 `addInteraction` 自动建 `Flow 1`；`flow.name` 可写；`page.createFlow` 会追加；读回 1 条交互/1 条 flow `[实测-合成页]` | 待验证；view mode 点击未测 | V-08 |
-| 真实文件只读基线 | 在 `test-design` / `99-MCP-Test` 运行，返回文件/页面/board/选区 `[实测-合成页]` | 待真实项目文件 | V-10 |
+| 真实文件只读基线 | 在真实文件 `小纸条` / `01-Screens` 返回 5 个 390×844 board、0 越界和 1 条 flow `[实测-真实文件]` | 待复跑案例 01/02/03/05 | V-10 |
 | `generateStyle` + 库颜色 | 即使 `fillColorRefId` 指向 `color-brand-primary`，CSS 仍是 `#3366ffFF`，无变量 `[实测-合成页]` | 期望自动 `var(--token)` | 生成后按 token 表替换 |
 | `shape.export()` | 返回 Promise\<Uint8Array\> `[实测]` | 待验证 | 导出案例 |
 | `generateStyle` | 只认 `includeChildren` `[实测]` | 官方总览示例出现 `withChildren` | 案例 04 |

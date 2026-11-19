@@ -116,7 +116,7 @@ npm run verify    # check + test（含 site:check）
 
 逐条证据与反例见 `docs/penpot-mcp/pitfalls.md`；可复现骨架见 `skills/penpot-mcp/references/recipes.md`。
 
-> 2026-11-19 刷新 MCP 后，V-00/V-02/V-04/V-05 与案例 01/02/03 已在 Penpot 2.18.7 的临时合成页通过；案例 04 的生成链路通过，但实测不自动 token 化，需要生成后处理。真实项目文件复跑仍未完成。记录见 `verification/log/2026-11-19.md`。
+> 2026-11-19 刷新 MCP 后，V-00/V-02/V-04/V-05 与案例 01/02/03 已在 Penpot 2.18.7 的临时合成页通过；案例 04 的生成链路通过，但实测不自动 token 化，需要生成后处理。真实项目文件 `小纸条` 已完成 5 屏设计首版并通过 V-10 只读基线；view mode 实际点击仍未验证。记录见 `verification/log/2026-11-19.md`。
 
 ## 验证与已知未知
 
