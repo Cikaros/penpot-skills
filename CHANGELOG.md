@@ -6,6 +6,14 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.8
+
+错误信息索引。
+
+### Added
+
+- `pitfalls.md` 新增 11 条报错 → 原因 → 处理对照，覆盖 `location`、`user:read`、`openPage`、`structuredClone`、`object is not extensible`、grid getter、`generateStyle` 类型、`replaceColor`、变体 API、fills、图片解码。
+
 ## v0.5.7
 
 页面切换时序。

@@ -358,7 +358,23 @@ shape.borderRadius = 12;                       // 也可用四角独立属性
 - 页面可 `penpot.createPage()` 后直接 `page.remove()`，不会切换当前页 `[实测]`；适合做临时验收页。
 - 跨调用状态放 `storage`；普通变量不保留。
 
-## 8. 验收清单
+## 8. 错误信息索引
+
+| 报错 | 原因 | 处理 |
+|---|---|---|
+| `Cannot read properties of undefined (reading 'origin')` | 执行上下文没有 `location` | 删掉 `location.*` |
+| `Permission user:read is not granted` | 插件缺少用户信息权限 | 跳过 `currentUser`，不是未登录 |
+| `Cannot modify a page that is not currently active` | `openPage` 未 `await` | `await penpot.openPage(page)` |
+| `message could not be cloned` | 返回值里含函数/DOM | 只返回字符串、数字、数组、普通对象 |
+| `object is not extensible` | 给代理写不存在的属性（如 `shadow`、`typography`） | 用真实字段名（`shadows`、逐字段复制） |
+| `Cannot set property columns ... which has only a getter` | grid 列定义只读 | 用 flex 或绝对定位 |
+| `Value not valid: tailwind. Code: :generateStyle-type` | `generateStyle` 只支持 `css` | 传 `type:"css"` |
+| `Value not valid: {}. Code: :replaceColor-oldColor` | 颜色参数传了字符串 | 传 `{color:"#..."}` 对象 |
+| `Value not valid: [object ShapeProxy] ... Code: :shapes` | `createVariantFromComponents` 不收 shape/ID | 暂用独立组件模拟变体 |
+| `Value not valid: ... Code: :fills` | fill 里塞了 LibraryColor 对象 | `fillColor` + `fillColorRefId` + `fillColorRefFile` |
+| `decoded size is zero` | 图片字节无效或为错误页 | 上传前查魔数，换源 |
+
+## 9. 验收清单
 
 - [ ] 子元素都在父容器内（含 `clipContent` 的 board）
 - [ ] 没有 0 宽/0 高、没有负尺寸
