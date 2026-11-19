@@ -131,6 +131,8 @@ return { ref: shape.fills[0].fillColorRefId === color.id };
 ```js
 const png = await shape.export({ type: "png", scale: 1 });
 const svg = await shape.export({ type: "svg" });
+// 或：const fill = await penpotUtils.exportImage(shape, "fill", false);
+// 注意 exportImage 第二参是 "shape"/"fill"，不是 "png"
 return {
   png: { len: png.length, head: Array.from(png.slice(0, 4)) },   // 89 50 4E 47
   svg: { len: svg.length, head: String.fromCharCode(...svg.slice(0, 4)) } // "<svg"

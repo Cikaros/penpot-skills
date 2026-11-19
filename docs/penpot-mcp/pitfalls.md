@@ -183,6 +183,16 @@ const svg  = await shape.export({ type: "svg" });  // Uint8Array
 
 `[实测]` 2.18.7 两者都返回 Promise。不要 `data[0]` 直接取下标。
 
+高阶封装（更省事）：
+
+```js
+await penpotUtils.exportImage(shape, "shape", false); // 渲染图 PNG（内部先等 200ms）
+await penpotUtils.exportImage(shape, "shape", true);  // 渲染图 SVG
+await penpotUtils.exportImage(shape, "fill", false);  // 原始填充图字节
+```
+
+`[实测]` 第二参是 `"shape"` 或 `"fill"`，不是 `"png"`；传 `"png"` 报 `Unsupported export mode: png`。`fill` + SVG 会报 `Image fills cannot be exported as SVG`。
+
 ### 4.2 错误页当图片
 
 症状：上传"成功"，但图片空白，读回字节以 `<html` 开头（常见 548 字节）。

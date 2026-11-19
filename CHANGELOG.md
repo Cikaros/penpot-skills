@@ -6,6 +6,14 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.9
+
+高阶导出封装。
+
+### Added
+
+- `penpotUtils.exportImage(shape, "shape"|"fill", asSvg)`：`shape` 导出渲染图，`fill` 导出原始填充字节；第二参传 `"png"` 会报错。
+
 ## v0.5.8
 
 错误信息索引。
