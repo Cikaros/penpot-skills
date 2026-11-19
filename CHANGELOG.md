@@ -6,6 +6,15 @@
 - MINOR：新增技能、文档章节或规范条目
 - PATCH：修正错误、补充示例、措辞调整
 
+## v0.5.7
+
+页面切换时序。
+
+### Added
+
+- `penpot.openPage(page)` 返回 Promise，必须 `await`；否则向未激活页面写入会报 `Cannot modify a page that is not currently active`。
+- `createPage()` 不会自动切换当前页，需显式 `openPage`。
+
 ## v0.5.6
 
 命名一致性巡检。

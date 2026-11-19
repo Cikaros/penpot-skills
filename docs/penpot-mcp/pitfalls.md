@@ -127,6 +127,15 @@ penpot.distributeHorizontal(shapes);
 - **分布前先确保 x 互不相同**：三个元素 x 全相同时，分布结果会退化（实测出现 x=5/10/10）。
 - 对齐/分布只改坐标，不改尺寸；flex/grid 子元素上调用无效。
 
+### 2.8 切换页面必须 await
+
+```js
+await penpot.openPage(page);   // 返回 Promise
+page.root.insertChild(0, shape);
+```
+
+`[实测]` 不等待 `openPage` 就往目标页写入，会报 `Cannot modify a page that is not currently active`。`penpot.createPage()` 也不会自动切换当前页，需要显式 `openPage`。
+
 ## 3. 文本
 
 ```js
