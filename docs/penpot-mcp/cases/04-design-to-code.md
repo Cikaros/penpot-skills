@@ -56,6 +56,34 @@ CSS 类名与 HTML 类名共用同一基类（如 `e2ehome-<hash>`），可直�
 
 > **2.18.7 实测限制**：即使 shape 的 fill 带有 `fillColorRefId` 指向本地库颜色，`generateStyle` 仍输出裸值（例如 `#3366ffFF`），不会自动生成 `var(--color-brand-primary)`。token 映射必须在生成后按 token 表做后处理，不能假设 `generateStyle` 自动完成。
 
+Post-processing with the repository's zero-dependency tokenizer:
+
+```js
+import fs from "node:fs";
+import {
+  auditCss,
+  flattenDtcg,
+  tokenizeCssDetailed,
+} from "../../../shared/design-tokens.mjs";
+
+const tokens = flattenDtcg(
+  JSON.parse(fs.readFileSync("shared/tokens/example.tokens.json", "utf8")),
+);
+const generated = `
+  .home { color: #3366ffFF; background: #FFFFFF; gap: 16px; }
+`;
+const result = tokenizeCssDetailed(generated, tokens);
+
+if (result.unmapped.length) {
+  throw new Error(`未映射颜色: ${result.unmapped.join(", ")}`);
+}
+
+console.log(result.css);
+console.log(auditCss(result.css));
+```
+
+Expected: known colours become `var(--color-...)`; remaining raw `16px` must be explained or mapped to a spacing token. The probe `verification/probes/07-css-tokenize.mjs` pins this behaviour. This proves the post-processor, **not** that `generateStyle` itself emits variables.
+
 ## 步骤 4：产出结构
 
 ```text
@@ -74,16 +102,21 @@ CSS 类名与 HTML 类名共用同一基类（如 `e2ehome-<hash>`），可直�
 ## 步骤 5：验收
 
 - [ ] 代码中每个颜色都能在 token 表找到
+- [ ] `tokenizeCssDetailed` 的 `unmapped` 为空，或已登记例外
+- [ ] `auditCss` 的裸 `px` 都有解释；没有新增魔数
 - [ ] 每个间距都是 4 的倍数且在 scale 内
 - [ ] 字号层级与设计稿一致
 - [ ] 在 390 / 1440 两个宽度下结构不塌
+- [ ] `withPrelude` 的重复 `html, body` 已去重（如使用）
 
 ## 常见失败
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
 | 只导出了外层，子元素缺失 | 选项名用错（见步骤 2） | 查 API 后重导 |
-| 颜色全是裸值 | `generateStyle` 不读取 `fillColorRefId`，即使挂了库也输出裸色 | 生成后按 token 表替换，或在代码侧手工变量化 |
+| 颜色全是裸值 | `generateStyle` 不读取 `fillColorRefId`，即使挂了库也输出裸色 | 用 `tokenizeCssDetailed` 后处理，并检查 `unmapped` |
+| 变量替换了错误语义 | 同值不同用途（如 surface / on-primary） | 按语义指定映射，不能只按值自动替换 |
+| 仍有裸 `16px` | 只做了颜色 token 化 | 对间距/字号做显式语义映射，不要按值猜 |
 | 结构层级过深 | 用 group 层层包裹 | 扁平化，group 不作为 DOM 层级 |
 | 字体对不上 | 设计用了未加载字体 | 先在文件里补齐字体资源 |
 

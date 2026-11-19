@@ -20,6 +20,9 @@
 | 案例 02 图片扫描/替换 | 1 张 PNG 扫描通过；替换保留 `fillOpacity=0.5`；读回 PNG `[实测-合成页]` | 待验证 | 案例 02 + 日志 |
 | 案例 03 越界修复 | 2 个越界修复后 0，`clipContent` 保留 `[实测-合成页]` | 待验证 | 案例 03 + 日志 |
 | 案例 04 生成链路 | CSS 3040/165、`withPrelude` 147/789、HTML 3643、SVG 589；token 映射未通过，含裸色 `[实测-合成页]` | 待验证 | 案例 04 + 日志 |
+| 案例 04 token 后处理 | `tokenizeCssDetailed` 将 `#3366ffFF` 替换为 `var(--color-brand-primary)`；`unmapped=[]`，裸 `16px` 进入审计 | 待验证 | V-07 |
+| 案例 05 interaction/flow | `Board.addInteraction` / `Page.createFlow` 签名存在 `[源码]`；**未执行** | 待验证 | V-08 |
+| 真实文件只读基线 | 探针已写，**未执行**；当前 Penpot 标签页被挂起 | 待验证 | V-10 |
 | `generateStyle` + 库颜色 | 即使 `fillColorRefId` 指向 `color-brand-primary`，CSS 仍是 `#3366ffFF`，无变量 `[实测-合成页]` | 期望自动 `var(--token)` | 生成后按 token 表替换 |
 | `shape.export()` | 返回 Promise\<Uint8Array\> `[实测]` | 待验证 | 导出案例 |
 | `generateStyle` | 只认 `includeChildren` `[实测]` | 官方总览示例出现 `withChildren` | 案例 04 |
@@ -46,7 +49,9 @@
 3. `02-layout-wait.js`：在可丢弃页确认插入顺序与等待语义；
 4. `03-overflow.mjs`：嵌套越界仍只报直接父级越界；
 5. 重跑案例 01/02/03，至少记录一条 `[实测-真实文件]`；
-6. 更新本矩阵与 `docs/penpot-mcp/known-unknowns.md`，再跑 `npm run verify`。
+6. 运行 `07-css-tokenize.mjs` 和 `09-site-links.mjs`，确认 token 化与静态站链接不回归；
+7. 在可写合成页运行 `08-prototype-flow.js`，在真实文件运行 `10-real-file-baseline.js`；
+8. 更新本矩阵与 `docs/penpot-mcp/known-unknowns.md`，再跑 `npm run verify`。
 
 ## 4. 证据边界
 

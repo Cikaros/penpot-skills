@@ -1,0 +1,49 @@
+{
+  "color": {
+    "$type": "color",
+    "brand": {
+      "primary": {
+        "$value": "#3366FF",
+        "$description": "Primary brand action"
+      },
+      "on-primary": {
+        "$value": "#FFFFFF"
+      }
+    },
+    "text": {
+      "primary": {
+        "$value": "#111827"
+      },
+      "secondary": {
+        "$value": "#6B7280"
+      }
+    },
+    "surface": {
+      "default": {
+        "$value": "#FFFFFF"
+      }
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "4": { "$value": { "value": 4, "unit": "px" } },
+    "8": { "$value": { "value": 8, "unit": "px" } },
+    "16": { "$value": { "value": 16, "unit": "px" } },
+    "24": { "$value": { "value": 24, "unit": "px" } }
+  },
+  "radius": {
+    "$type": "dimension",
+    "8": { "$value": { "value": 8, "unit": "px" } }
+  },
+  "font": {
+    "body": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans SC",
+        "fontSize": { "value": 16, "unit": "px" },
+        "fontWeight": 400,
+        "lineHeight": 1.5
+      }
+    }
+  }
+}

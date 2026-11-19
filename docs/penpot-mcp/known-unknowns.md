@@ -11,7 +11,8 @@
 | KU-02 | 真实项目文件上的行为 | 现有 `[实测]` 主要来自 2.18.7 合成验收页；案例 01–03 已在临时页跑通 `[实测-合成页]` | 真实文件的组件、库、权限差异未覆盖 | 在专用真实文件运行案例 01/02/03，记录为 `[实测-真实文件]` |
 | KU-03 | 远程/多用户模式的完整工具面 | 只从文档与上游说明知道 `import_image` 可能被移除 | 远程部署的图片导入与导出路径可能不同 | 在 remote 部署跑 `00` 探针并记录工具清单 |
 | KU-13 | 案例 01 的默认页面是否存在 | 当前 `test-design` 只有 `Page 1` / `99-MCP-Test`，没有 `03-Screens`；本轮已临时创建并删除 `03-Screens` `[实测-合成页]` | 全新文件直接照案例执行会找不到页面 | 把案例改成“先查/再建页面”，或由调用者先建页面 |
-| KU-14 | 案例 04 的 token 映射是否达标 | 合成 board 未挂 token 时 CSS 出现裸色 `#FFFFFFFF`；已有 `exp-token` 挂了 `color-brand-primary`，`generateStyle` 仍输出 `#3366ffFF`、无变量 `[实测-合成页]` | `generateStyle` 不会自动 token 化，不能声称案例 04 全量通过 | 生成后按 `library.local.colors`/项目 token 表替换，并在真实 token 文件复跑 |
+| KU-14 | 案例 04 的 token 映射是否达标 | 合成 board 未挂 token 时 CSS 出现裸色 `#FFFFFFFF`；已有 `exp-token` 挂了 `color-brand-primary`，`generateStyle` 仍输出 `#3366ffFF`、无变量 `[实测-合成页]`；`tokenizeCssDetailed` 后处理已用 V-07 本地测试验证 | `generateStyle` 不会自动 token 化；后处理可消除已知裸色，但间距/字号仍需语义映射 | 在真实 token 文件复跑，并将剩余裸 px 逐条映射 |
+| KU-15 | 案例 05 的 interaction/flow 在 view mode 是否可点 | API 签名 `Board.addInteraction`、`Page.createFlow`、`Interaction` 存在 `[源码]`；探针 V-08 已写但未执行 | 不能声称原型流已跑通；API 结构存在不等于 view mode 可点击 | 唤醒 Penpot 标签页，在可丢弃页运行 V-08，并人工/浏览器点一次 view mode |
 
 ## 2. API 语义待确认
 

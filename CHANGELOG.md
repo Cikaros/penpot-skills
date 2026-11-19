@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `docs/design/prototyping.md`：原型问题/假设/保真度/证据/决策模板，形成性测试最小流程与验收。
+- `docs/design/states.md`：屏幕级 loading/empty/error/partial/offline/permission/long-text 状态矩阵与命名规则。
+- `docs/design/accessibility.md`：WCAG 2.2 AA 设计期基线、设计标注表、Penpot 可查与必须到原型/代码验证的分界。
+- `docs/design/usability-test.md`：可用性测试计划、任务写法、主持脚本、指标、严重度与报告模板。
+- `docs/design/design-system.md`：Token 分层、组件 API、贡献流程、版本/废弃、Penpot 边界与治理指标。
+- `docs/design/ai-collaboration.md`：AI 输入契约、证据边界、评审门、隐私与失败模式。
+- `docs/design/tokens.md` + `shared/design-tokens.mjs` + `shared/tokens/example.tokens.json`：DTCG 子集、CSS 变量、颜色后处理与审计；`test/design-tokens.test.mjs` 覆盖别名/循环/8 位 alpha。
+- `docs/penpot-mcp/cases/05-prototype-flow.md` + `verification/probes/08-prototype-flow.js`：`addInteraction` / `createFlow` 原型流；API 为 `[源码]`，执行待标签页唤醒。
+- `scripts/build-site.mjs` + `site/`：零依赖静态文档站与 `site:check`；`verification/probes/09-site-links.mjs` 校验本地链接。
+- `verification/probes/07-css-tokenize.mjs`、`10-real-file-baseline.js`：token 后处理探针与真实文件只读基线。
+- 案例 04 增加 token 后处理代码、验收项和常见失败；案例 05 补入案例索引。
+- README、`principles.md`、`components.md`、`prompt-brief.md`、`COMPASS.md` 增加交叉链接与单一源登记。
+
+### Changed
+
+- `npm run check` 增加 `site:check`；`CONTRIBUTING` 增加站点重建与 token 测试说明。
+- `COMPASS` P3 标记为部分完成：静态站与链接探针已落地，浏览器/真实文件 E2E 仍待外部条件。
+
+### Known gaps
+
+- 案例 05 未执行；Penpot 标签页被浏览器挂起。
+- 真实项目文件未访问，V-10 只有探针。
+- 内置浏览器未恢复；改用系统 Edge headless 完成首页/Token 页视觉冒烟，完整点击 E2E 仍未完成。
+
 遵循语义化版本：`vMAJOR.MINOR.PATCH`。
 
 - MAJOR：规范出现不兼容变更（既有用法需要改写）

@@ -58,8 +58,12 @@ verification/                 # P2：探针与验证日志
 | API 行为、版本差异、错误索引 | `docs/penpot-mcp/pitfalls.md` | `skills/penpot-mcp/references/api-pitfalls.md` | 手工同步；图片签名片段自动生成 |
 | 认证、`userToken`、远程模式 | `docs/penpot-mcp/auth.md` | `skills/penpot-mcp/references/auth-and-transport.md` | 手工同步；图片签名片段自动生成 |
 | 设计协作原则、简报 | `docs/design/principles.md`、`prompt-brief.md` | `skills/penpot-mcp/references/design-workflow.md` | 手工同步（内容层面，暂不生成） |
+| 原型方法、状态、可访问性 | `docs/design/prototyping.md`、`states.md`、`accessibility.md` | 无（方法规范） | 已建立；与 `principles.md`/`components.md` 交叉链接 |
+| 可用性测试、设计系统、AI 协作 | `docs/design/usability-test.md`、`design-system.md`、`ai-collaboration.md` | 无（方法规范） | 已建立；与 `prototyping.md`/`components.md` 交叉链接 |
+| Token/DTCG 与 CSS 后处理 | `docs/design/tokens.md`、`shared/design-tokens.mjs` | `docs/penpot-mcp/cases/04-design-to-code.md` | 已建立；纯函数测试 + V-07 |
 | 操作配方、代码骨架 | `shared/snippets/` | `docs/penpot-mcp/cases/`、`references/recipes.md` | 已建立；8 个代码块由 `sync-snippets` 生成 |
 | 设计规范 | `docs/design/visual-spec.md`、`components.md` | 无 | 已有 |
+| 静态文档站 | 各 Markdown 源 | `site/`（生成） | 零依赖生成；`site:check` 防过期 |
 | 版本与发布 | `CHANGELOG.md` + git tag | `skills/penpot-mcp/manifest.json` | 已建立；`build-manifest` 校验 |
 
 在生成器落地前，允许保留手工副本，但必须满足：
@@ -71,6 +75,8 @@ verification/                 # P2：探针与验证日志
 ## 5. 质量门禁
 
 ### 5.1 `npm run check`
+
+- **站点**：`scripts/build-site.mjs --check` 校验 `site/` 是否与 Markdown 源一致。
 
 零依赖脚本，必须覆盖：
 
@@ -122,8 +128,8 @@ npm test
 |---|---|---|---|
 | P0 | 仓库侧完成 | 案例命名/await/序列化修正、完整魔数守卫、嵌套越界提示、标题编号、证据级别 | 在真实 Penpot 实例复跑案例 01/02/03 |
 | P1 | 完成 | `check-docs`、CI、guard 单测、install/doctor、命名规则、术语表、贡献指南、片段生成/同步、`manifest.json`、已知未知清单 | 无（许可证仍按 ADR-004 待作者决定） |
-| P2 | 仓库侧完成 | 探针库、验证日志、兼容性矩阵；V-00/V-02/V-04/V-05 与案例 01/02/03 已在 2.18.7 合成页通过 | 案例 04 token 后处理、真实项目文件复跑 |
-| P3 | 未开始 | — | docs 站点、真实实例 E2E |
+| P2 | 仓库侧完成 | 探针库、验证日志、兼容性矩阵；V-00/V-02/V-04/V-05 与案例 01/02/03 已在 2.18.7 合成页通过；案例 04 token 后处理已落地 | 真实项目文件复跑；案例 05 待执行 |
+| P3 | 部分完成 | 零依赖静态文档站、站点链接探针；案例 05 API 路径已写 | 真实实例浏览器 E2E；真实项目文件复跑 |
 
 ### P0：先修会误导执行的错误（已完成）
 
@@ -173,13 +179,15 @@ npm test
 - 任取一条 `[实测]`，能在 10 分钟内找到探针、期望输出和最近一次执行记录；
 - 升级 Penpot 后有明确的回归清单。
 
-### P3：可选增强（未开始）
+### P3：可选增强（部分完成）
 
-- docs 站点（仅当读者/检索痛点明确）；
-- 真实 Penpot 实例上的 Docker + Playwright + 插件 E2E；
-- 按版本自动生成兼容性矩阵。
+- 静态文档站：已用 `scripts/build-site.mjs` 零依赖生成到 `site/`；
+- 站点链接探针：`verification/probes/09-site-links.mjs`；
+- 浏览器冒烟：用 agent-browser 打开站点并走查；
+- 真实 Penpot 实例上的 Docker + Playwright + 插件 E2E：待真实文件/环境；
+- 按版本自动生成兼容性矩阵：未开始。
 
-这些不以“看起来更完整”为理由提前做。
+这些不以“看起来更完整”为理由提前做；站点只在确有检索/阅读需求时维护。
 
 ## 8. 决策记录
 
@@ -209,6 +217,12 @@ npm test
 
 禁止把 `[实测-合成页]` 简写成“实测”后用于真实文件承诺。
 
+### ADR-006：静态站零依赖生成，不引入站点框架
+
+`site/` 由 `scripts/build-site.mjs` 从 Markdown 直接生成，不引入 VuePress/Docusaurus，也不把内容迁移到 `content/`。这样做的原因是：当前规模只需要可检索的 HTML 与链接校验，框架带来的依赖、构建和安全维护成本高于收益。
+
+站点是派生副本，不是事实源；改内容仍改 Markdown，`site:check` 在 CI 中防止过期。浏览器 E2E 属于后续验证，不以“生成成功”代替。
+
 ## 9. 知识变更的 Definition of Done
 
 - [ ] 事实有唯一源，派生副本已同步或标记生成；
@@ -222,7 +236,7 @@ npm test
 ## 10. 当前明确不做
 
 - 不把全部文档迁移到 `content/`；
-- 不引入 VuePress/Docusaurus 等站点框架；
+- 不引入 VuePress/Docusaurus 等站点框架；静态站保持零依赖生成；
 - 不承诺 2.18.7 之外的版本行为；
 - 不自动选择许可证；
 - 不为了“统一”重写历史 `CHANGELOG`。

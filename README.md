@@ -20,6 +20,13 @@ docs/
     cases/           实战案例：首页搭建、图片修复、越界修复、设计转代码
   design/            第二部分：设计思维、理念与设计规范
     principles.md    设计原则与 AI 协作原则
+    prototyping.md   原型方法、保真度选择、测试与决策
+    usability-test.md 可用性测试执行、指标、分级与报告
+    design-system.md 设计系统治理、组件 API、贡献与废弃
+    ai-collaboration.md AI 输入契约、证据、评审门与安全
+    states.md        屏幕/组件状态矩阵与验收
+    accessibility.md 可访问性设计基线、标注与验收
+    tokens.md        Token 分层、DTCG 子集与 CSS 后处理
     visual-spec.md   栅格、间距、字阶、颜色、圆角、阴影、图标
     components.md    组件分层、变体、命名、验收
     prompt-brief.md  设计简报模板与示例
@@ -32,7 +39,9 @@ scripts/
   check-docs.mjs     文档与示例的静态门禁
   sync-snippets.mjs  把 canonical 片段写入 Markdown 标记块
   build-manifest.mjs 生成/校验技能目录清单
+  build-site.mjs     零依赖生成静态文档站
   install-skill.ps1  带备份与版本戳的技能安装
+site/                由 npm run site 生成的静态文档站
 test/                纯函数与探针单测
 verification/        探针、验证日志、兼容性矩阵
 CONTRIBUTING.md      贡献流程、内容规则、评审清单
@@ -60,7 +69,7 @@ Copy-Item -Recurse .\skills\penpot-mcp "$env:USERPROFILE\.sclaw\agent\skills\"
 
 **想先理解规则**：按顺序读 `docs/penpot-mcp/usage.md` → `conventions.md` → `pitfalls.md`。
 
-**想做设计规范**：读 `docs/design/principles.md` → `visual-spec.md` → `components.md`。
+**想做设计规范**：读 `docs/design/principles.md` → `prototyping.md` → `usability-test.md` → `design-system.md` → `ai-collaboration.md` → `states.md` → `accessibility.md` → `tokens.md` → `visual-spec.md` → `components.md`。
 
 ## 质量门禁
 
@@ -69,7 +78,8 @@ npm test          # 纯函数与探针单测
 npm run check     # 链接、围栏、标题编号、片段一致性、manifest、版本
 npm run sync      # 从 shared/snippets/ 重建 Markdown 代码块
 npm run manifest  # 重建 skills/penpot-mcp/manifest.json
-npm run verify    # check + test
+npm run site      # 重建 site/ 静态文档站
+npm run verify    # check + test（含 site:check）
 ```
 
 工程化决策与阶段划分见 `docs/engineering/COMPASS.md`；改动文档或技能前先对齐该文件。

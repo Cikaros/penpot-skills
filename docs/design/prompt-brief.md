@@ -13,6 +13,8 @@ Quality: 可测量的验收条件（尺寸、层级数、对比度、导出图�
 Non-goals: 本次明确不做的事
 ```
 
+如果这次要验证设计假设，先按 [`prototyping.md`](prototyping.md) 补“问题 / 假设 / 保真度 / 证据 / 决策”，再开始画；测试执行按 [`usability-test.md`](usability-test.md)。
+
 ## 2. 示例 A：修复缺图与错位
 
 ```text

@@ -9,7 +9,9 @@
 | API 行为、版本差异、错误索引 | `docs/penpot-mcp/pitfalls.md` |
 | 认证、`userToken`、远程模式 | `docs/penpot-mcp/auth.md` |
 | 操作配方、代码骨架 | 先改 `docs/penpot-mcp/cases/` 或 `skills/penpot-mcp/references/recipes.md`，并在 `CHANGELOG` 说明 |
-| 设计原则、规范 | `docs/design/` |
+| 设计原则、方法、规范 | `docs/design/` |
+| Token/DTCG、CSS 后处理 | `docs/design/tokens.md` + `shared/design-tokens.mjs` |
+| 静态文档站 | 各 Markdown 源；`site/` 由 `npm run site` 生成 |
 | 技能入口 | `skills/penpot-mcp/SKILL.md` |
 
 技能目录必须自包含；不要把 `docs/` 的相对路径写进技能引用，因为安装到 `~/.sclaw/agent/skills` 后路径会失效。
@@ -23,7 +25,11 @@ npm run verify
 它包含：
 
 - `check-docs.mjs`：相对链接、代码围栏、标题编号、禁用模式、版本一致性；
-- `guards.test.mjs`：图片签名、命名归一化、嵌套越界、空值守卫。
+- `sync-snippets --check` / `build-manifest --check`：片段与技能清单一致性；
+- `build-site --check`：`site/` 是否与 Markdown 源一致；
+- `guards.test.mjs` / `design-tokens.test.mjs`：图片签名、命名、越界，以及 DTCG/token 后处理。
+
+改了文档后运行 `npm run site` 重建静态站，再跑 `npm run verify`。
 
 失败就修，不要用“只是文档”作为跳过理由。
 

@@ -9,6 +9,10 @@
 | V-04 | `04-overflow-live.js` | `execute_code` | 是（自清理） | 直接子级 + 嵌套子级各报一个越界 |
 | V-05 | `05-image-upload.js` | `execute_code` | 是（自清理） | 1×1 PNG 上传成功，`media` 1×1，读回字节仍是 PNG |
 | V-06 | `06-page-lifecycle.js` | `execute_code` | 是（自清理） | 临时页可创建、切换、恢复、删除 |
+| V-07 | `07-css-tokenize.mjs` | Node | 否 | 8 位 alpha 裸色归一化并替换为 token；剩余裸 px 进入审计 |
+| V-08 | `08-prototype-flow.js` | `execute_code` | 是（自清理） | board interaction + flow 创建、读回、清理；待 Penpot 标签页唤醒后执行 |
+| V-09 | `09-site-links.mjs` | Node | 否 | `site/` 所有本地 href/src 可解析 |
+| V-10 | `10-real-file-baseline.js` | `execute_code` | 否 | 真实项目文件的文件/页面/board/选区只读基线；待真实文件 |
 
 ## 期望输出示例
 
@@ -42,4 +46,18 @@ V-06：
 {"opened":{"isCurrent":true},"restored":true,"removed":true}
 ```
 
-实际输出可以与示例字段顺序不同，但关键字段必须一致；V-02 的 `wait` 必须是 `resolved`，否则先记录为波动，不要直接判定布局逻辑失败。案例 01–04 的完整脚本见 `docs/penpot-mcp/cases/`，执行结果记录在 `verification/log/`。
+V-07：
+
+```json
+{"ok":true,"replacements":[{"from":"#3366ffFF","to":"var(--color-brand-primary)"}],"audit":{"rawColors":[],"rawPx":["16px"]}}
+```
+
+V-09：
+
+```json
+{"ok":true,"pages":38,"links":1186}
+```
+
+实际输出可以与示例字段顺序不同，但关键字段必须一致；V-02 的 `wait` 必须是 `resolved`，否则先记录为波动，不要直接判定布局逻辑失败。案例 01–05 的完整脚本见 `docs/penpot-mcp/cases/`，执行结果记录在 `verification/log/`。
+
+> V-08 / V-10 目前只有可执行探针，**没有执行记录**：2026-11-19 本轮 Penpot 插件标签页被浏览器挂起（无心跳），不得标 `[实测]`。V-07 / V-09 是本地 Node 探针，不是 Penpot 行为结论。

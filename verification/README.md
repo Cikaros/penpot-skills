@@ -15,6 +15,10 @@ verification/
     04-overflow-live.js        # execute_code：真实 API 越界探针（会写入）
     05-image-upload.js         # execute_code：图片上传/读回探针（会写入）
     06-page-lifecycle.js       # execute_code：临时页创建/删除探针（会写入）
+    07-css-tokenize.mjs        # Node：CSS 颜色 token 化
+    08-prototype-flow.js       # execute_code：interaction + flow 探针（会写入）
+    09-site-links.mjs          # Node：静态站本地链接
+    10-real-file-baseline.js   # execute_code：真实文件只读基线
   log/
     2026-11-19.md              # 最近一次记录
   compatibility.md             # 版本 × 能力矩阵
@@ -27,6 +31,8 @@ verification/
 ```powershell
 node verification/probes/01-image-kind.mjs
 node verification/probes/03-overflow.mjs
+node verification/probes/07-css-tokenize.mjs
+node verification/probes/09-site-links.mjs
 ```
 
 Penpot 探针：
@@ -35,7 +41,8 @@ Penpot 探针：
 2. 打开插件并确认已连接 MCP；
 3. 把 `00-runtime-readonly.js` 的内容粘贴到 `execute_code`；
 4. 把返回原样写入新的 `verification/log/YYYY-MM-DD.md`；
-5. `02`/`04`/`05` 会创建并删除临时 board，`06` 会创建并删除临时页，只在确认当前页可写时运行；V-02 有 2 秒等待上限，超时也会清理。
+5. `02`/`04`/`05`/`08` 会创建并删除临时 board，`06` 会创建并删除临时页，只在确认当前页可写时运行；V-02 有 2 秒等待上限，超时也会清理。
+6. V-08 需要可写页面；V-10 只读，但必须打开真实项目文件后才能作为 `[实测-真实文件]` 证据。
 
 ## 约定
 

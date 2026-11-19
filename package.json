@@ -5,11 +5,13 @@
   "type": "module",
   "description": "Penpot MCP usage notes, design specs and installable skills.",
   "scripts": {
-    "check": "node scripts/check-docs.mjs && node scripts/sync-snippets.mjs --check && node scripts/build-manifest.mjs --check",
+    "check": "node scripts/check-docs.mjs && node scripts/sync-snippets.mjs --check && node scripts/build-manifest.mjs --check && node scripts/build-site.mjs --check",
     "test": "node --test",
     "verify": "npm run check && npm test",
     "sync": "node scripts/sync-snippets.mjs --write",
-    "manifest": "node scripts/build-manifest.mjs"
+    "manifest": "node scripts/build-manifest.mjs",
+    "site": "node scripts/build-site.mjs --write",
+    "site:check": "node scripts/build-site.mjs --check"
   },
   "engines": {
     "node": ">=20"

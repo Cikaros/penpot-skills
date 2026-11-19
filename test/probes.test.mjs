@@ -19,13 +19,15 @@ test("execute_code 探针是可解析的函数体", () => {
     "04-overflow-live.js",
     "05-image-upload.js",
     "06-page-lifecycle.js",
+    "08-prototype-flow.js",
+    "10-real-file-baseline.js",
   ]) {
     assert.doesNotThrow(() => new AsyncFunction(readProbe(name)), `${name} should parse`);
   }
 });
 
 test("静态探针返回 ok=true", () => {
-  for (const name of ["01-image-kind.mjs", "03-overflow.mjs"]) {
+  for (const name of ["01-image-kind.mjs", "03-overflow.mjs", "07-css-tokenize.mjs", "09-site-links.mjs"]) {
     const output = execFileSync(process.execPath, [path.join("verification", "probes", name)], {
       cwd: root,
       encoding: "utf8",
